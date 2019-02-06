@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="generator" content="Hugo 0.53" />
+	
+	<title>Simple Injector Blog - Opinions and Best Practice from the Simple Injector Contributors</title>
+
+	
+	<link rel="stylesheet" href="/css/Roboto.css">
+	<link href="/css/bootstrap.min.css" rel="stylesheet">
+	<link href="/css/strange-case.css" rel="stylesheet">
+	
+
+	
+	
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+</head>
+<body class="scheme-darkbrown">
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-sm-4 col-md-3 col-lg-3 sidebar">
+
+			
+	<div class="sidebar-content">
+
+		<a href=""><h1>Simple Injector Blog</h1></a>
+		<p>Opinions and Best Practice from the Simple Injector Contributors</p>
+
+		
+
+		<ul class="sidebar-menus">
+			
+		</ul>
+
+		<div class="sidebar-recent hidden-xs">
+			<p>Recent Posts:</p>
+			<ul>
+				
+				<li><a href="/2017/03/simple-injector-v4-has-been-released/">Simple Injector v4 has been released</a></li>
+				
+				<li><a href="/2016/07/working-around-the-asp-net-core-di-abstraction/">Working around the ASP.NET Core DI abstraction</a></li>
+				
+				<li><a href="/2016/06/whats-wrong-with-the-asp-net-core-di-abstraction/">What’s wrong with the ASP.NET Core DI abstraction?</a></li>
+				
+				<li><a href="/2015/12/when-should-you-use-a-container/">When should you use a container?</a></li>
+				
+				<li><a href="/2015/08/simple-injector-v3-is-here/">Simple Injector v3 is here!</a></li>
+				
+				<li><a href="/2015/06/beta-testers-wanted/">Wanted: Beta Testers</a></li>
+				
+				<li><a href="/2015/06/welcome-to-the-simple-injector-weblog/">Welcome to the Simple Injector weblog</a></li>
+				
+			</ul>
+		</div>
+
+		
+
+		<p class="copyright">&copy; 2019. All rights reserved. </p>
+		<p class="attr">Powered by <a href="http://gohugo.io">Hugo</a> &amp; <a href="https://github.com/ExchangeRate-API/strange-case">Strange Case</a> (inspired by <a href="https://github.com/poole/hyde">Hyde</a>).</p>
+
+	</div>
+
+
+			</div>
+			<div class="col-sm-7 col-sm-offset-4 col-md-6 col-md-offset-3 col-lg-5 col-lg-offset-3 content">
+
+				
+				<div class="post">
+
+					<div class="post-heading">
+						<h1><a href="/2017/03/simple-injector-v4-has-been-released/">Simple Injector v4 has been released</a></h1>
+						<span>Mar 31, 2017 by Steven</span>
+					</div>
+
+					
+
+<p>For the last months we’ve been working on the next major release of Simple Injector, and it is finally here. We have removed legacy methods, simplified working with the library, and fixed many bugs and quirks.</p>
+
+<p><strong>In contrast to the impact that v3 had for developers, we expect most developers to update without having to make any code changes when upgrading from the latest v3.x to v4.0.</strong> There are quite some breaking changes through, but most of them are in more specialized parts of the library that you use when extending Simple Injector, such as writing custom Lifestyles, which is something most developers don’t do.</p>
+
+<p>Our goal has always been to let the API guide you as much as possible through the breaking changes and how to fix them. In most cases removed parts of the API still exist, but are marked with [Obsolete(error: true)] attribute with expressive messages that explain what to do instead. This will cause your compiler to show a compilation error with (hopefully) a clear message describing the action to take. This should make it easier for you to migrate from v3.x to v4.0.</p>
+
+<p><strong>Before you upgrade to v4.0, please make sure you upgrade to the latest v3.x version of Simple Injector first.</strong></p>
+
+<p>With the release of v4.0 we moved to <a href="https://blogs.msdn.microsoft.com/dotnet/2016/09/26/introducing-net-standard/">.NET Standard</a> in favour of PCL. This means we removed support for PCL in version 4. Since most new platforms embrace the new .NET Standard, this shouldn’t be a problem. As long as your platform supports .NET Standard, Simple Injector v4 will run happily.</p>
+
+<h3 id="new-features">New Features</h3>
+
+<p>With this release we introduced many small and big simplifications to the API, some of which are:</p>
+
+<ul>
+<li>The integration of the common <code>LifetimeScopeLifestyle</code> and <code>ExecutionContextScopeLifestyle</code> as part of the core library. These lifestyles have been renamed to the more obvious <code>ThreadScopedLifestyle</code> and <code>AsyncScopedLifestyle</code>, and the old SimpleInjector.Extensions.* NuGet packages have been deprecated.</li>
+<li>The deprecation of framework-specific lifestyles <code>WebApiRequestLifestyle</code> and <code>AspNetRequestLifestyle</code> in favor of the new built-in <code>AsyncScopedLifestyle</code>.</li>
+<li>The automatic and transparent reuse of registrations for classes that are registered with multiple interfaces. Simple Injector detected these kinds of problems, calling them <a href="https://simpleinjector.org/diatl">Torn Lifestyles</a>, but in Simple Injector v4 we completely removed this problem altogether, making it something the user hardly ever has to think about.</li>
+<li>Several overloads added to simplify common scenarios.</li>
+</ul>
+
+<p>On top of that, we removed some small parts of the API that could cause ambiguity and could lead to hidden, hard to detect errors. In some situations, e.g. when making conditional registrations, the user was able to make decisions on the service type of the consuming component, but this was unreliable, because such component could be registered with multiple interfaces. This could make the conditional registration invalid, where it was impossible for Simple Injector to warn the user about this. We removed these ambiguous properties and force the user to use the property containing the implementation type instead. We added some convenient extension methods on System.Type to make it easier to extract an abstraction from such implementation type, namely: <code>IsClosedTypeOf&lt;T&gt;</code>, <code>GetClosedTypeOf&lt;T&gt;</code> and <code>GetClosedTypesOf&lt;T&gt;</code>.</p>
+
+<p>We improved the Diagnostic sub system once more. The biggest improvement is the detection of <a href="https://simpleinjector.org/diasc">Short Circuited Dependencies</a>. This is something that we were doing since v2, but there were situations in the past where Short Circuited Dependencies weren’t detected. We fixed that in this release.</p>
+
+<p>For a complete list of all the breaking changes, new features and bug fixes, please view the <a href="https://github.com/simpleinjector/SimpleInjector/releases/tag/v4.0">release notes</a>.</p>
+
+
+				</div>
+				
+				<div class="post">
+
+					<div class="post-heading">
+						<h1><a href="/2016/07/working-around-the-asp-net-core-di-abstraction/">Working around the ASP.NET Core DI abstraction</a></h1>
+						<span>Jul 6, 2016 by Steven and Peter</span>
+					</div>
+
+					
+
+<p>For the last couple of years, Microsoft has been building the latest version of the .NET platform, branded .NET Core. One of the core components of this new framework is a DI library. Unfortunately, Microsoft made the mistake of defining a public abstraction for its DI library. In our <a href="/blog/2016/06/whats-wrong-with-the-asp-net-core-di-abstraction/">previous blog post</a> we described why the existence of this abstraction leads to all sorts of problems.</p>
+
+<p>The goal of this blog post is to explain how you can effectively limit exposure to this abstraction and instead apply proven practices that promote structure, design and maintainability within your application. The summary of this blog post is the following:</p>
+
+<p><strong>TLDR;</strong></p>
+
+<blockquote>
+<p>Refrain from using a self-developed or third-party provided adapter for the .NET Core DI abstraction. Isolate the registration of application components from the framework and third-party components. Pursue a SOLID way of working and allow your application registrations to be verified and diagnosed by Simple Injector, without concern for incompatibilities with the framework and third-party components.</p>
+</blockquote>
+
+<p>Microsoft wants its users to start off using the default container and then replace, if you want, with a third-party DI library. This advice of having one container instance that builds up both framework components, third-party components and application components stems from the idea that it is useful for framework components to be injected into application components. Having a single container makes it easy for the container build up object graphs that are a mixture of application and framework components.</p>
+
+<p>Although developers might find this appealing, it’s important to realize that this a violation of the <a href="https://en.wikipedia.org/wiki/Dependency_inversion_principle">Dependency Inversion Principle</a> (DIP), which states that:</p>
+
+<blockquote>
+<p>abstracts are owned by the upper/policy layers.</p>
+</blockquote>
+
+<p>In other words, in order to conform to the DIP, your application code should not depend on framework abstractions. Typically, code that depends on framework abstractions should exist wholly in the <a href="https://freecontent.manning.com/dependency-injection-in-net-2nd-edition-understanding-the-composition-root/">Composition Root</a>. The DIP and <a href="https://en.wikipedia.org/wiki/Interface_segregation_principle" title="Interface Segregation Principle">ISP</a> promote the use of abstractions tailored to your application’s needs and the creation of adapter implementations. Instead of having a framework or external library dictate the size and shape of abstractions, the application under development should define what’s best for its particular needs. Not only does this result in clean and testable code, it makes the code more flexible and reusable.</p>
+
+<p>The <a href="https://en.wikipedia.org/wiki/SOLID">SOLID</a> principles are of great guidance here, and since the DIP states that our application (upper) layer should only depend on its own abstractions, building up mixed object graphs is an anti-pattern. Having one container build up mixed object graphs leads developers to violate the SOLID principles and will undoubtedly cause pain in the long run.</p>
+
+<p>Instead of aiming for one DI library that builds everything up (one container to rule them all), we should keep these two worlds separate: framework components should be built up by the framework’s container, application components should be built up using our container of choice. To integrate or bridge the two worlds we define small focused adapters on each side. Use the framework’s provided extension points to intercept the creation of root types and forward the creation of those types to your container. On the other side of the container divide we define implementations for application-tailored abstractions, which call-back into framework and third-party library code. A well designed framework will have all the necessary abstractions in place for us to intercept. ASP.NET Core MVC already contains all the required hooks. third-party tool developers should follow the same practice.</p>
+
+<p>Some developers feel uncomfortable with the notion of two containers in single application. But if you view the built-in framework container as a configuration system for the framework, having an independent container for your own application components is a non-issue. Every framework has its own configuration system. ASP.NET Web Forms has its own configuration system (mainly XML based) and MVC &amp; Web API have their own code-first configuration systems. In a sense, nothing much has changed; ASP.NET Core still has a configuration system, be it one that includes an internal container-like structure. Apparently this container gives them a lot of flexibility, which is great. But we never had the need to completely swap out a framework’s configuration system before, so why should we need to for ASP.NET Core?</p>
+
+<p>So how does this work? If we don’t want to swap out the built-in configuration system for .NET Core, what should we do? As said before, good practice is to use the framework’s supplied extension points and override as necessary to redirect/intercept the creation of certain types.</p>
+
+<p>The main interception point for ASP.NET Core MVC is the <code>IControllerActivator</code> abstraction. This abstraction allows intercepting the creation of MVC controller types. An implementation for Simple Injector is trivial:</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">sealed</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">SimpleInjectorControllerActivator</span> : IControllerActivator
+{
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">readonly</span> Container container;
+    <span style="color:#66d9ef">public</span> SimpleInjectorControllerActivator(Container c) =&gt; container = c;
+
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">object</span> Create(ControllerContext c) =&gt;
+       container.GetInstance(c.ActionDescriptor.ControllerTypeInfo.AsType());
+
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> Release(ControllerContext c, <span style="color:#66d9ef">object</span> controller) { }
+}</code></pre></div>
+
+<p>To replace the built-in controller activator, you configure the Core container:</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp">services.AddSingleton&lt;IControllerActivator&gt;(
+    <span style="color:#66d9ef">new</span> SimpleInjectorControllerActivator(container));</code></pre></div>
+
+<p>Although trivial to implement, we do provide an out-of-the-box implementation for you in our <a href="https://www.nuget.org/packages/SimpleInjector.Integration.AspNetCore.Mvc/">ASP.NET Core MVC integration package</a> to make your life easier. As a matter of fact, over time we will supply you with with all the convenient methods that allow you to make bootstrapping as seamless as possible. We might not provide you with integration packages for all existing frameworks, but plugging in Simple Injector will always be trivial when the designers provided you with the correct interception points.</p>
+
+<p>What this means is that all framework components and third-party components can keep being composed by the built-in DI container and your application will register and resolve your components through Simple Injector.</p>
+
+<p>Many developers incorrectly assume that having one container for the framework’s internal configuration and another for the application components will mean re-registering hundreds of framework and third-party library components in the application container, but this is simply not necessary. First of all, as we already established, those registrations shouldn’t be in the application container because no application component should directly depend on those abstractions. Secondly, your application will only need to interact with a handful of those services at most, so you’ll handle the abstractions you are actually interested in.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>Let’s say you have a component that needs access to the <code>HttpContext</code> instance, because you want to extract the name of the user from the current request being executed. Since the <code>HttpContext</code> can be acquired using the <code>Microsoft.AspNetCore.Http.IHttpContextAccessor</code> abstraction, your component requires this abstraction as a constructor argument and your code might look something like this:</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">sealed</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CustomerRepository</span> : ICustomerRepository
+{
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">readonly</span> IUnitOfWork uow;
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">readonly</span> IHttpContextAccessor accessor;
+
+    <span style="color:#66d9ef">public</span> CustomerRepository(IUnitOfWork uow, IHttpContextAccessor accessor)
+    {
+        <span style="color:#66d9ef">this</span>.uow = uow;
+        <span style="color:#66d9ef">this</span>.accessor = accessor;
+    }
+
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> Save(Customer entity)
+    {
+        entity.CreatedBy = <span style="color:#66d9ef">this</span>.accessor.HttpContext.User.Identity.Name;
+        <span style="color:#66d9ef">this</span>.uow.Save(entity);
+    }
+}</code></pre></div>
+
+<p>There are, however, several problems with this approach:</p>
+
+<ul>
+<li>The component now takes a dependency on an ASP.NET Core MVC abstraction, which makes it impossible to reuse this component outside the context of ASP.NET Core MVC.</li>
+<li>The component has explicit knowledge about how to get the user name for the application.</li>
+<li>The code that gets the user name will likely be duplicated throughout the application.</li>
+<li>The component becomes much harder to test, because of the <a href="https://c2.com/cgi/wiki?TrainWreck">train wreck</a> in the <code>Save</code> method.</li>
+</ul>
+
+<p>One of the main problems is that the <code>IHttpContextAccessor</code> abstraction isn’t designed for the specific needs of this component. The needs of this component are not to access the current <code>HttpContext</code>, its need is to get the name of the user on whose behalf the code is running. We should create a specific abstraction for that specific need:</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> IUserContext
+{
+    <span style="color:#66d9ef">string</span> Name { <span style="color:#66d9ef">get</span>; }
+}</code></pre></div>
+
+<p>With this abstraction, we can simplify our component to the following:</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">sealed</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CustomerRepository</span> : ICustomerRepository
+{
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">readonly</span> IUnitOfWork uow;
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">readonly</span> IUserContext userContext;
+
+    <span style="color:#66d9ef">public</span> CustomerRepository(IUnitOfWork uow, IUserContext userContext)
+    {
+        <span style="color:#66d9ef">this</span>.uow = uow;
+        <span style="color:#66d9ef">this</span>.userContext = userContext;
+    }
+
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> Save(Customer entity)
+    {
+        entity.CreatedBy = userContext.Name;
+        uow.Save(entity);
+    }
+}</code></pre></div>
+
+<p>What we have achieved here is that we:</p>
+
+<ul>
+<li>Decoupled our component from the framework code; it can be reused outside of ASP.NET.</li>
+<li>Prevented this component to have explicit knowledge about how to retrieve the current user’s name.</li>
+<li>Prevented this code from being duplicated throughout the application.</li>
+<li>Reduced test complexity.</li>
+<li>Made the code simpler.</li>
+</ul>
+
+<p>Since we have decoupled our component from the framework code, we can now reuse the component. For instance, it’s quite common to want to run part of our code base in a background Windows Service where there is obviously no HttpContext. To make this work we will create an adapter implementation for IUserContext that is specific to the type of application we are building. For our ASP.NET application, we will need an adapter implementation that contains the original code that retrieves the user’s name. For a Windows Service, we might return the name of the system user.</p>
+
+<p>Here’s our adapter implementation for ASP.NET:</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">sealed</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AspNetUserContext</span> : IUserContext
+{   
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">readonly</span> IHttpContextAccessor accessor;
+    <span style="color:#66d9ef">public</span> AspNetUserContext(IHttpContextAccessor a) =&gt; accessor = a;
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">string</span> Name =&gt; accessor.HttpContext.Context.User.Identity.Name;
+}</code></pre></div>
+
+<p>As you can see, this adapter implementation is straightforward, all it does is getting the <code>HttpContext</code> for the current request and the user name is determined from the context, as we saw before.</p>
+
+<p>This component can be registered in our application container as follows:</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp"><span style="color:#66d9ef">var</span> accessor =
+    app.ApplicationServices.GetRequiredService&lt;IHttpContextAccessor&gt;();
+container.RegisterSingleton&lt;IUserContext&gt;(<span style="color:#66d9ef">new</span> AspNetUserContext(accessor));</code></pre></div>
+
+<p>The app variable here is ASP.NET Core’s <code>IApplicationBuilder</code>abstraction that gets injected into the <code>Startup.Configure</code> method.</p>
+
+<p>What we see here is that our <code>AspNetUserContext</code> adapter depends directly on the <code>IHttpContextAccessor</code> abstraction. We can do this because <code>IHttpContextAccessor</code> is one of the framework’s abstractions that we know for sure is registered as a singleton. For most framework and third-party services however, we will have no idea what lifestyle it is registered with, and therefore, resolving them directly using the <code>ApplicationServices</code> property of <a href="https://docs.asp.net/projects/api/en/latest/autoapi/Microsoft/AspNetCore/Builder/IApplicationBuilder/">IApplicationBuilder</a> is a pretty bad idea.</p>
+
+<p>Due to <a href="https://simpleinjector.org/decisions#dont-allow-resolving-outside-an-active-scope">another design flaw</a>, ASP.NET Core allows resolving scoped instances through the <code>ApplicationServices</code> property, but returns those components as singletons! In other words, if we were to request any framework and third-party services through <code>ApplicationServices</code>, the chances are that we would get a stale instance that would break our application at runtime—and ASP.NET Core will not inform us of our mistake. Instead of throwing an exception the ASP.NET Core will fail silently and leave our application in a potentially invalid state, maybe causing an <code>ObjectDisposedException</code> or worse. This is actually yet another incompatibility with Simple Injector; Simple Injector blocks these types of invalid resolves by throwing an exception.</p>
+
+<p>UPDATE: ASP.NET Core 2.0 mitigates the resolution of scoped instances from the root container, when running in development mode. However, it will still not detect the resolution of any disposable transients from the root container. This will lead to memory leaks.</p>
+
+<p>Instead of using the <code>ApplicationServices</code> property, it would be better to resolve services using the <code>HttpContext.RequestServices</code> property. The following adapter shows an example when dealing with framework dependencies with a lifestyle that is either not singleton or unknown:</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">sealed</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">AspNetAuthorizerAdapter</span> : IAuthorizer
+{
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">readonly</span> Func&lt;IAuthorizationService&gt; provider;
+
+    <span style="color:#66d9ef">public</span> AspNetAuthorizerAdapter(Func&lt;IAuthorizationService&gt; provider)
+    {
+        <span style="color:#66d9ef">this</span>.provider = provider;
+    }
+
+    <span style="color:#75715e">// Implementation here
+</span><span style="color:#75715e"></span>}</code></pre></div>
+
+<p>Here we have an adapter for a hypothetical <code>IAuthorizer</code> abstraction. Instead of depending on ASP.NET’s <code>IAuthorizationService</code> directly, this adapter depends on <code>Func&lt;IAuthorizationService&gt;</code>, which allows the correctly scoped service to be resolved at runtime. This adapter can be registered as follows:</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp">container.RegisterSingleton(
+    <span style="color:#66d9ef">new</span> AspNetAuthorizerAdapter(
+        GetAspNetServiceProvider&lt;IAuthorizationService&gt;(app)));</code></pre></div>
+
+<p>The <code>AspNetAuthorizationAdapter</code> is created and registered as singleton. The registration makes use of the convenient <code>GetAspNetServicesProvider&lt;T&gt;</code> helper method that allows creating the provider delegate:</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp"><span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> Func&lt;T&gt; GetAspNetServiceProvider&lt;T&gt;(IApplicationBuilder app)
+{
+    <span style="color:#66d9ef">var</span> accessor =
+        app.ApplicationServices.GetRequiredService&lt;IHttpContextAccessor&gt;();
+    <span style="color:#66d9ef">return</span> () =&gt;
+    {
+        <span style="color:#66d9ef">var</span> context = accessor.HttpContext
+            ?? <span style="color:#66d9ef">new</span> InvalidOperationException(<span style="color:#e6db74">&#34;No HttpContext&#34;</span>);
+        <span style="color:#66d9ef">return</span> context.RequestServices.GetRequiredService&lt;T&gt;();
+    };
+}</code></pre></div>
+
+<p>When supplied with an <code>IApplicationBuilder</code> instance, the <code>GetAspNetServiceProvider</code> method will create a <code>Func&lt;T&gt;</code> that allows resolving the given service type <code>T</code> from the <code>RequestServices</code> collection according to its proper scope.</p>
+
+<p><strong>NOTE:</strong> With the introduction of ASP.NET Core integration package for Simple Injector v4, we added <code>GetRequestService&lt;T&gt;()</code> and <code>GetRequiredRequestService&lt;T&gt;()</code> extension methods on <code>IApplicationBuilder</code> that allow retrieving request services just like the previous <code>GetAspNetServiceProvider&lt;T&gt;()</code> method does. With the introduction of v4.1, we added the notion of <a href="https://simpleinjector.org/aspnetcore#cross-wiring-asp-net-and-third-party-services">auto crosswiring</a>, which simplifies this process even more.</p>
+
+<h2 id="using-logging-in-your-application">Using logging in your application</h2>
+
+<p>Besides a DI library, .NET Core ships with a logging library out-of-the-box. Any application developer can use the built-in logger abstraction directly in their applications. But should they? If you look at the <a href="https://github.com/aspnet/Logging/blob/1.0.0/src/Microsoft.Extensions.Logging.Abstractions/ILogger.cs"><code>ILogger</code> abstraction</a> supplied to us by Microsoft, it’s hard to deny that the abstraction is very generic in nature and might very well not suit your application’s specific needs. The previous arguments still hold: application code should be in control over the abstraction.</p>
+
+<p>The SOLID principles guide us defining an application-specific abstraction for logging. The exact shape of this abstraction will obviously differ from application to application (but look at <a href="https://stackoverflow.com/questions/5646820/logger-wrapper-best-practice">this example</a> for inspiration). Again, a simple adapter implementation can do the transition from application code to framework code:</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp"><span style="color:#75715e">// your application&#39;s logging abstraction
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">interface</span> ILog { <span style="color:#66d9ef">void</span> Log(LogEntry e); }
+
+<span style="color:#66d9ef">public</span> <span style="color:#66d9ef">sealed</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">DotNetCoreLoggerAdapter</span> : ILog
+{
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">readonly</span> Microsoft.Extensions.Logging.ILogger logger;
+    <span style="color:#66d9ef">public</span> DotNetCoreLoggerAdapter(ILogger logger) =&gt; <span style="color:#66d9ef">this</span>.logger = logger;
+
+    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> Log(LogEntry e) =&gt; 
+        logger.Log(ToLevel(e.Severity), <span style="color:#ae81ff">0</span>, e.Message, e.Exception,
+            (s, _) =&gt; s);
+
+    <span style="color:#66d9ef">private</span> <span style="color:#66d9ef">static</span> LogLevel ToLevel(LoggingEventType s) =&gt;
+        s == LoggingEventType.Warning ? LogLevel.Warning :
+        s == LoggingEventType.Error ? LogLevel.Error :
+        LogLevel.Critical;
+}</code></pre></div>
+
+<p>This <code>DotNetCoreLoggerAdapter</code> can be registered as singleton as follows:</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp">container.RegisterSingleton&lt;ILog&gt;(
+    <span style="color:#66d9ef">new</span> DotNetCoreLoggerAdapter(loggerFactory.CreateLogger(<span style="color:#e6db74">&#34;Application&#34;</span>)));</code></pre></div>
+
+<p>But there are <a href="https://stackoverflow.com/a/41244169/264697">other options</a> when it comes to integrating logging with Simple Injector.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>By creating application specific abstractions, we prevent our code from taking unnecessary dependencies on external code, making them more flexible, testable and maintainable. We can define simple adapter implementations for the abstractions we need to use, while hiding the details of connecting to external code. This allows our application to use our container of choice (and supports a <a href="https://blog.ploeh.dk/2014/06/10/pure-di/">container-less</a> approach). This approach is part of a set of principles and practices that is been taught by experts like Robert C. Martin and others for decades already. Don’t ignore these practices, embrace them and be both productive and successful.</p>
+
+
+				</div>
+				
+				<div class="post">
+
+					<div class="post-heading">
+						<h1><a href="/2016/06/whats-wrong-with-the-asp-net-core-di-abstraction/">What’s wrong with the ASP.NET Core DI abstraction?</a></h1>
+						<span>Jun 30, 2016 by Steven and Peter</span>
+					</div>
+
+					
+
+<p>For the last couple of years Microsoft has been building the latest version of the .NET platform: .NET Core. .NET Core is a complete redesign of .NET, with the goals of being truly cross-platform and cloud friendly. We’ve been following the development of .NET Core closely and have released .NET Core compatible versions of Simple Injector since RC1. With the release of Simple Injector v3.2 we now officially support .NET Core.</p>
+
+<p>As you may be aware Microsoft has added its own DI library as one of its core components. Some would yell “finally!”. The omission of such a component has spawned many open source DI libraries for .NET. Simple Injector obviously being one of them.</p>
+
+<p>Don’t get me wrong here, we applaud Microsoft for promoting DI as a core practice in .NET and it will likely lead to many more developers practicing DI, which is a win for our industry. The problem, however, starts with the abstraction Microsoft has defined on top of their built-in DI container. Compared to the previous <em>Resolve</em> abstractions, such as <a href="https://msdn.microsoft.com/en-us/library/system.web.mvc.idependencyresolver(v=vs.118).aspx">IDependencyResolver</a> and <a href="https://msdn.microsoft.com/en-us/library/system.iserviceprovider(v=vs.110).aspx">IServiceProvider</a>, this new abstraction adds a <em>Register</em> API on top <a href="https://docs.asp.net/projects/api/en/latest/autoapi/Microsoft/Extensions/DependencyInjection/IServiceCollection/">IServiceCollection</a>. With the definition of this abstraction, it is Microsoft’s vision that other (more feature rich) DI libraries could plug-in into the platform, while application developers, third-party tool builders and framework developers use the standardized abstraction to add their registrations. This would allow application developers a standard for integrating their DI library of choice.</p>
+
+<p>At first sight having an abstraction might seem like sound advice—a common saying in our industry is that there are few problems in software that can’t be solved by adding a (extra) layer of abstraction. In this instance though their reasoning is flawed. DI experts have been warning Microsoft about this problem from the beginning, without success. Mark Seemann quite accurately described the problems with this approach in general <a href="https://blog.ploeh.dk/2014/05/19/conforming-container/">here</a>, where IMO the main points of his reasoning are:</p>
+
+<ul>
+<li>It pulls in the direction of the lowest common denominator</li>
+<li>It stifles innovation</li>
+<li>It makes it more difficult to avoid using a DI container</li>
+<li>It introduces versioning hell</li>
+<li>If adapters are supplied by contributors, the adapters may have varying quality levels, and may not support the latest version of the <em>Conforming Container</em>.</li>
+</ul>
+
+<p>These are real issues we are facing today with the new .NET Core DI abstraction. DI containers often have very unique and incompatible features when it comes to their registration API. Simple Injector, for instance, is very carefully designed in a way that enables the identification of numerous configuration errors. One very prominent example (there are many more) is Simple Injector’s <a href="https://simpleinjector.org/diagnostics">diagnostic abilities</a>. This is one of the features that is <em>fundamentally</em> incompatible with the expectations that consumers of the DI abstraction will have. So what are the expectations consumers will have of the new abstraction?</p>
+
+<p>Consumers of the DI abstraction can be divided into three groups. Framework components, third-party libraries and application developers; especially framework components and third-party libraries, which are now expected to add their own registrations through the common abstraction. Since it is nigh on impossible for these two groups of developers to test their code with all the available adapters they will test their code with the built-in container. And while using the built-in container these developers will (and arguably should) implicitly expect the standardized behaviour of the built-in container—no matter which adapter is used. In other words, it is the built-in container that defines both the contract and the behaviour of the abstraction. Every implemented adapter must be <em>an exact superset</em> of the built-in container. Deviating from the norm is not allowed because it would break third-party tools that depend on the behaviour of the default, built-in, container.</p>
+
+<p>Simple Injector’s diagnostic and verification abilities is one of the many features that make Simple Injector users extremely productive. It detects problems that would be detected much later in the development cycle when using a different DI library. But running the diagnostics on both application and third-party registrations will cause problems because it is unlikely that all the external parties will automatically “play nice” with Simple Injector’s diagnostics. There is every chance they will define registrations that Simple Injector finds suspicious even though they have (hopefully) tested the registrations are fine for their specific case with the default container. It would be impossible for a hypothetical adapter for Simple Injector to distinguish between third-party registrations and application registrations. Switching off diagnostics completely would remove one of Simple Injector’s most important safety nets, whilst leaving the diagnostics system in place would likely cause false-positives from the third-party tooling that would each need to be suppressed by application developers. Since these third-party registrations are mostly hidden to the application developer, working around these issues could be daunting, frustrating and sometimes even impossible. One might argue that it would be good for Simple Injector to detect problems with third-party tools, but contacting those same developers to explain the “problem” would probably lead to fingers being pointed at us, since we “obviously” provided the user with an “incompatible” adapter.</p>
+
+<p>Simple Injector’s diagnostic abilities is just one of the many incompatibilities that we would face when writing an adapter for .NET Core’s DI abstraction. Other incompatibilities include:</p>
+
+<ul>
+<li>The way Simple Injector <a href="https://simpleinjector.org/separate-collections">explicitly separates the registration of collections</a> from one-to-one mappings</li>
+<li>How Simple Injector handles open-generic registrations; they are not treated as fall-back registrations as they are by the built-in container</li>
+<li>How Simple Injector handles scoping; Scopes in Simple Injector are ambient while .NET Core forces an <a href="https://github.com/aspnet/DependencyInjection/issues/334">ambient-less scoping model</a>.</li>
+</ul>
+
+<p>To make a fully compatible adapter for Simple Injector requires removing many prominent features, and thereby changing the existing behaviour of the Simple Injector library to something that would violate the guiding principles that underpin our vision. This is not an attractive solution. Not only would it introduce major breaking changes, it would remove features and behaviours that make Simple Injector unique and it is this complete set of features that many developers love about Simple Injector. In this sense having an adapter “stifles innovation” as Mark describes. With Simple Injector we made many innovations and not only would the adapter make Simple Injector almost useless to our users, it would restrict us from future improvement and innovation. Some might view Simple Injector’s philosophy as radical, but we think otherwise—we designed Simple Injector in a way that we think serves our users best. And the <a href="https://www.nuget.org/packages/SimpleInjector/">NuGet download count</a> on the Simple Injector package indicates that many developers agree with us. Conforming to a defined adapter would prevent us from serving our users.</p>
+
+<p>UPDATE: Other maintainers of DI container are also starting to notice how the new DI abstraction is stifling innovation. The developer of the <a href="http://www.lightinject.net/">LightInject</a> DI Container, for instance, had to completely disable one of its library&rsquo;s compelling features to allow his adapter to be used in ASP.NET Core v2.2 application, without <a href="https://github.com/aspnet/Extensions/issues/686">completely crashing</a> at startup.</p>
+
+<p>Although Simple Injector’s view may diverge from the norm more than most other containers, the simple act of defining this common abstraction blocks future DI libraries with an even more radical or innovative viewpoint from being used at all—it stifles innovation for future libraries. Just imagine one of the other containers introducing the same kind of verification that Simple Injector provides? Such feature can’t be introduced without breaking the contract of the DI abstraction. The mere act of having such an adapter can block progress in our industry.</p>
+
+<p>With this explanation, I hope I’ve also made it clear that Microsoft’s DI abstraction isn’t even the lowest common denominator, because the lowest common denominator implies compatibility with all DI libraries! As I expressed <a href="https://github.com/simpleinjector/SimpleInjector/issues/41">here</a> the chances are that none of the existing DI libraries are fully compatible with the defined abstraction. This is partly down to the fact that although the built-in container defines the contract of the abstraction, the abstraction test project lacks a solid number of test cases that fully define the exact behaviour in all scenarios. Up until now all adapter implementations have been guessing and hoping for the best, that their adapter is mostly in sync with the built-in container’s behaviour. The Autofac maintainers for instance, <a href="https://www.paraesthesia.com/archive/2016/06/29/netcore-rtm-where-is-autofac/">realized</a> they have some quite severe incompatibility issues and eventually <a href="https://github.com/aspnet/DependencyInjection/pull/416#issuecomment-231773011">came to the same conclusion</a> as <a href="https://github.com/aspnet/DependencyInjection/pull/416#issuecomment-231736332">we did</a>. The Autofac maintainers <a href="https://github.com/autofac/Autofac.Extensions.DependencyInjection/issues/15#issuecomment-313723053">publically stated</a> that their adapter is not 100% compatible with Microsoft’s DI abstraction:</p>
+
+<blockquote>
+<p>there will definitely be behavior differences between the Autofac DI container and the Microsoft DI container. We’re not trying to behave identically – if you choose to use Autofac as your backing container, you’re also choosing the Autofac behaviors. The difference in behavior you found is one of probably many</p>
+</blockquote>
+
+<p>The <a href="https://jeremydmiller.com/2017/09/11/proposal-for-structuremap-5/">same holds</a> for the maintainer of StructureMap that more recently stated:</p>
+
+<blockquote>
+<p>ASP.Net Core DI compliance has been a huge pain in the ass to the point where I’ve openly wondered if the ASP.Net team has purposely tried to sabotage and wipe out all the existing ecosystem of IoC containers</p>
+</blockquote>
+
+<p>This wouldn’t be so bad if Microsoft’s DI library was a feature rich implementation that contained features like Simple Injector’s verification and diagnostic services so that we all use the same fully featured DI library. Sadly, the implementation is far from feature rich, Microsoft itself has <a href="https://blogs.msdn.microsoft.com/webdev/2014/06/17/dependency-injection-in-asp-net-vnext/">described</a> their implementation as a</p>
+
+<blockquote>
+<p>minimalistic DI container [that] is useful in the cases when you don’t need any advanced injection capabilities</p>
+</blockquote>
+
+<p>To make matters worse, since the built-in container defines the contract of the abstraction, adding new features to the built-in container will break all existing adapters! Any third-party developer who uses the abstraction will only test with the built-in library and when this library depends on a feature added to the built-in container that is not yet supported by an adapter, things will fail and the application developer is screwed. This is one aspect of the versioning hell that Mark Seemann discusses in his blog post. One will hope that, at the very least, Microsoft will bump the major version number any time they make a change. Not only is their current implementation “minimalistic”, it can never evolve to a feature rich completely usable DI container, because they’ve painted themselves in a corner: every future change is breaking change that will piss everyone off.</p>
+
+<p>A better solution is to avoid using the abstraction and its adapters entirely. As Mark Seemann quite accurately explained <a href="https://blog.ploeh.dk/2014/05/19/di-friendly-library/">here</a> and <a href="https://blog.ploeh.dk/2014/05/19/di-friendly-framework/">here</a>, reusable libraries and a framework may not need to use a DI container at all. Unfortunately, the mere act of defining an abstraction will make it much harder to avoid using it. By defining an abstraction and actively promoting its use, Microsoft is leading thousands of third-party library developers and framework developers to stop thinking about defining the right library and the right framework abstractions (Mark’s articles clearly describes this). They no longer think about this because Microsoft leads them to believe that the whole world needs one common abstraction. We have seen new factory interfaces for MVC appear very late in the game (such as the <a href="https://github.com/aspnet/Mvc/commit/354400f12bf1bb82d364eddb5710bc370384bff4"><code>IViewComponentActivator</code> abstraction</a> prior to RC2). And if we see the MVC team make these kinds of mistakes till very late in the development cycle, what can we expect from all those developers who are starting to build on top of the new .NET platform?</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>The definition of a DI abstraction is a painful mistake by Microsoft that will haunt us for many years to come. It has already stifled innovation, has introduced versioning hell, and frustrates many developers. The abstraction is incompatible with many DI libraries and, against expert advice, Microsoft chose to retain the abstraction, dividing the world into incompatible and partially compatible containers, leading to endless issue reports for the adapter libraries that implement the DI abstraction and third-party libraries that use the abstraction.</p>
+
+<p>Our view is that as an application developer, you should refrain from using an adapter and in <a href="/blog/2016/07/working-around-the-asp-net-core-di-abstraction/">the next article</a> I will explain more thoroughly how to approach this and why, even without an incompatible container, it is the smarter way forward.</p>
+
+<p>Stay tuned</p>
+
+
+				</div>
+				
+				<div class="post">
+
+					<div class="post-heading">
+						<h1><a href="/2015/12/when-should-you-use-a-container/">When should you use a container?</a></h1>
+						<span>Dec 6, 2015 by Steven</span>
+					</div>
+
+					<p>A DI container is a tool that allows constructing the graphs of classes that contain an application’s behaviour (a.k.a. components or <a href="http://misko.hevery.com/2008/09/30/to-new-or-not-to-new/">injectables</a>). When we apply Dependency Injection in our systems the DI container can simplify the process of object construction and can, when used correctly, improve the maintainability of the start-up path (a.k.a. the <a href="https://freecontent.manning.com/dependency-injection-in-net-2nd-edition-understanding-the-composition-root/">Composition Root</a>) of our application. But a DI container is not mandatory when we apply Dependency Injection.</p>
+
+<p>Applying Dependency Injection without a DI container is called <a href="https://blog.ploeh.dk/2014/06/10/pure-di/">Pure DI</a>. When we use Pure DI we define the structure of our object graph explicitly in code and this code is still centralized in the Composition Root just as it is when using a DI container. Dependency Injection does not discourage the use of the new keyword to construct components; it promotes the centralization of the use of the new keyword.</p>
+
+<p>In <a href="https://blog.ploeh.dk/2012/11/06/WhentouseaDIContainer/">this</a> article, <a href="https://blog.ploeh.dk/">Mark Seemann</a> shows the advantage of Pure DI over using a container: with Pure DI the compiler can verify the object graph. Mark makes some good points that for smaller applications Pure DI can be more beneficial than the use of containers, while larger applications can take advantage of <a href="https://en.wikipedia.org/wiki/Convention_over_configuration">convention over configuration</a> which can help a lot in making your Composition Root maintainable. Mark even <a href="https://blog.ploeh.dk/2014/06/03/compile-time-lifetime-matching/">shows</a> how Pure DI can help in finding configuration mistakes like <a href="https://blog.ploeh.dk/2014/06/02/captive-dependency/">Captive Dependencies</a>.</p>
+
+<p>The primary benefit of Pure DI is that it allows your code to fail-fast (in this case the system fails at compile-time). Detecting failures early is crucial when it comes to lowering development cost, because tracking down bugs is obviously much easier in a system that fails fast.</p>
+
+<p>Although I do agree with Mark’s reasoning, it’s important to realize that Pure DI isn’t a silver bullet that detects all configuration mistakes. On the contrary, it’s quite easy to overlook problems such as Captive Dependencies as the Composition Root starts to grow. If you were to switch from a DI container to Pure DI and you were expecting your code to fail-fast, you might be in for an unpleasant surprise when the first bugs appear. This can happen because the C# compiler can only do a few simple checks on your behalf, such as:</p>
+
+<ul>
+<li>Check whether the number of arguments supplied to a constructor match</li>
+<li>Check whether the types supplied to a constructor match</li>
+</ul>
+
+<p>The compiler is unable to perform the following checks:</p>
+
+<ul>
+<li>Are null values supplied to constructors</li>
+<li>Do constructor invocations fail</li>
+<li>Are dependencies injected into a component with a longer lifetime (the so called Captive Dependencies)</li>
+<li>Are dependencies that are expected to have a certain lifestyle, created more than once for the duration of that lifetime? (Problems known as <a href="https://simpleinjector.org/diatl">Torn Lifestyle</a> and <a href="https://simpleinjector.org/diaal">Ambiguous Lifestyle</a>)</li>
+<li>Are disposable components not disposed when they go out of scope.</li>
+</ul>
+
+<p>All these issues are relatively easy to spot when the number of components in the application is really small, but once that number starts to grow it’s very easy to lose track. A really strict coding style within your Composition Root does help but can easily go wrong when a team of developers is maintaining the Composition Root (opposed to having one single DI expert who has a really close watch on these types of issues).</p>
+
+<p>It’s hard to define a threshold in application size for when a DI container outweighs Pure DI. In the business systems I help create, we almost always use a DI container for the central application (which often is a web application), while using Pure DI for small (background) Windows Services since they typically use just a fraction of the total business layer. Once the Composition Root starts to grow, tools that can verify and diagnose the correctness of the Composition Root become extremely valuable.</p>
+
+<p>It is unfortunate that most DI containers have a limited set of capabilities when it comes to verifying their configuration (causing your application to fail silently). Simple Injector deals with all the previously stated issues and more. In Simple Injector it’s just a matter of following <a href="https://simpleinjector.org/howto#verify-configuration">good practices</a> and calling <code>Container.Verify()</code> once you have completed the configuration of the container. Verification of your configuration gives you an increased level of confidence that all known object graphs are wired correctly at application start-up. Simple Injector can give more certainty than Pure DI, while keeping the benefits of, among other things, convention over configuration.</p>
+
+
+				</div>
+				
+				<div class="post">
+
+					<div class="post-heading">
+						<h1><a href="/2015/08/simple-injector-v3-is-here/">Simple Injector v3 is here!</a></h1>
+						<span>Aug 18, 2015 by Steven</span>
+					</div>
+
+					
+
+<p>After months of preparation and development we have finally released <a href="https://www.nuget.org/packages/SimpleInjector/">Simple Injector v3.0</a>. In version 3 we are breaking from the past: we have removed legacy methods, simplified parts of the API and added some compelling new features.</p>
+
+<p><em><strong>We expect that almost every developer will have to make changes to his/her composition root when upgrading to v3.</strong> We did our best to make the upgrade process easy but please be prepared to make changes to your code.</em></p>
+
+<p>The driver for making these breaking changes is that parts of the API have evolved over time and in doing so have grown confusing (e.g. <code>RegisterOpenGeneric</code> and <code>RegisterManyForOpenGeneric</code>). In the pursuit of keeping Simple Injector simple we felt obligated to improve the consistency of the API. These decisions have not been taken lightly because we hate breaking your code. Our driving force is, however, a simpler and more compelling library for everyone.</p>
+
+<p>Our goal was to let the API guide you as much as possible through the breaking changes and how to fix them. In most cases removed parts of the API still exist, but are marked with <code>[Obsolete(error: true)]</code> attribute with expressive messages that explain what to do instead. This will cause your compiler to show a compilation error with (hopefully) a clear message describing the action to take. This should make it easier for you to migrate from v2.x to v3.0.</p>
+
+<p><strong><em>Before you upgrade to v3.0, please make sure you upgrade to the latest 2.8 version of Simple Injector first.</em></strong> Some beta testers reported that there were some changes between minor versions of the 2.x branch that broke code and/or unit tests. Upgrading in two steps should make the process much easier.</p>
+
+<p>Besides the clean-up of the API, Simple Injector is now much stricter when it comes to diagnosing your configuration. When calling <code>Verify()</code>, Simple Injector 3 will automatically run its diagnostics and it will throw an exception when any diagnostic error occurs. Even without calling <code>Verify()</code>, Simple Injector will always check for pesky <a href="https://simpleinjector.org/dialm">Lifestyle Mismatches</a> when resolving instances from the container and will throw an exception when such a mismatch is detected. These exceptions are intended to provide the quickest feedback on configuration mistakes that we believe you should resolve. From experience we know that this can save you from wasting many hours debugging problems later.</p>
+
+<h2 id="breaking-changes">Breaking Changes</h2>
+
+<p>The most prominent breaking changes are the changes to the public API and these can prevent your code from compiling.</p>
+
+<p>Here is a cheat sheet containing a mapping for the most prominent API changes. On the left side are the old v2 API calls, on the right side the related method to use in v3. <em>Note that in most cases the compiler errors will guide you through the process.</em></p>
+
+<table>
+<thead>
+<tr>
+<th>v2 API</th>
+<th>v3 API</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>RegisterSingle</td>
+<td>RegisterSingleton</td>
+</tr>
+
+<tr>
+<td>RegisterAll</td>
+<td>RegisterCollection</td>
+</tr>
+
+<tr>
+<td>RegisterSingleDecorator</td>
+<td>RegisterDecorator(Lifestyle.Singleton)</td>
+</tr>
+
+<tr>
+<td>RegisterAllOpenGeneric</td>
+<td>RegisterCollection</td>
+</tr>
+
+<tr>
+<td>RegisterManyForOpenGeneric</td>
+<td>Register / RegisterCollection</td>
+</tr>
+
+<tr>
+<td>RegisterOpenGeneric</td>
+<td>Register</td>
+</tr>
+
+<tr>
+<td>RegisterSingleOpenGeneric</td>
+<td>Register(Lifestyle.Singleton)</td>
+</tr>
+</tbody>
+</table>
+
+<p>For a complete list of all the breaking changes, please see the <a href="https://github.com/simpleinjector/SimpleInjector/releases/tag/v3.0">release notes</a>.</p>
+
+<h2 id="new-features">New Features</h2>
+
+<p>As well as the breaking changes there are many other big and small improvements to the library. The most prominent of these are:</p>
+
+<ul>
+<li>the addition of a <code>Lifestyle.Scoped</code> property;</li>
+<li>support for conditional and contextual registrations using the new <code>RegisterConditional</code> methods.</li>
+<li><code>Register</code> overloads now accept open generic types.</li>
+<li><code>RegisterCollection(Type, IEnumerable&lt;Registration&gt;)</code> now accepts open generic types.</li>
+<li><code>Container.Register(Type, IEnumerable&lt;Assembly&gt;)</code> and <code>Container.RegisterCollection(Type, IEnumerable&lt;Assembly&gt;)</code> overloads have been added to simplify batch registration.</li>
+<li>the <code>Container</code> class now implements <code>IDisposable</code> to allows disposing singletons.</li>
+</ul>
+
+<p>The new <code>Lifestyle.Scoped</code> is a small feature that can make your <a href="https://freecontent.manning.com/dependency-injection-in-net-2nd-edition-understanding-the-composition-root/">Composition Root</a> much cleaner. Most applications use a combination of three lifestyles: <code>Transient</code>, <code>Singleton</code>, and some scoped lifestyle that is particularly suited for that application type. For example an ASP.NET MVC application will typically use the <code>WebRequestLifestyle</code>; a Web API application will use the <code>WebApiRequestLifestyle</code>. Instead of using the appropriate <code>RegisterXXX</code> extension method of the appropriate integration package, you can now do the following:</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp"><span style="color:#66d9ef">var</span> container = <span style="color:#66d9ef">new</span> Container();
+<span style="color:#75715e">// Just define the scoped lifestyle once.
+</span><span style="color:#75715e"></span>container.Options.DefaultScopedLifesyle = <span style="color:#66d9ef">new</span> WebRequestLifestyle();
+
+container.Register&lt;IUserContext, AspNetUserContext&gt;(Lifestyle.Scoped);
+container.Register&lt;IUnitOfWork, DbContextUnitOfWork&gt;(Lifestyle.Scoped);</code></pre></div>
+
+<p>Not only does this make your code much cleaner, it also makes it easier to pass the container on to some methods that add some layer-specific configuration to the container. For instance.</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> BootstrapBusinessLayer(Container container) {
+    <span style="color:#75715e">// Registrations specific to the business layer here:
+</span><span style="color:#75715e"></span>    container.Register&lt;IUnitOfWork, DbContextUnitOfWork&gt;(Lifestyle.Scoped);
+}</code></pre></div>
+
+<p>The <code>Lifestyle.Scoped</code> property makes it easy for the business layer bootstrapper to add registrations using the application’s scoped lifestyle without having to know which lifestyle it actually is. This simplifies reuse of this bootstrapper across the applications in your solution.</p>
+
+<p>Another great improvement is the addition of the <code>RegisterConditional</code> methods. These method overloads allow conditional registration of types and registration of contextual types. Take the following conditional registrations:</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp">container.RegisterConditional&lt;ILogger, NullLogger&gt;(
+    c =&gt; c.Consumer.ImplementationType == <span style="color:#66d9ef">typeof</span>(HomeController));
+container.RegisterConditional&lt;ILogger, SqlLogger&gt;(c =&gt; !c.Handled);</code></pre></div>
+
+<p>This particular combination of registrations ensures that a <code>NullLogger</code> is injected into <code>HomeController</code> and all other components get a <code>SqlLogger</code>.</p>
+
+<p>For advanced scenarios one of the <code>RegisterConditional</code> overloads accepts an implementation type factory delegate. Take a look at the following example:</p>
+
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp">container.RegisterConditional(<span style="color:#66d9ef">typeof</span>(ILogger),
+    c =&gt; <span style="color:#66d9ef">typeof</span>(Logger&lt;&gt;).MakeGenericType(c.Consumer.ImplementationType),
+    Lifestyle.Singleton,
+    c =&gt; <span style="color:#66d9ef">true</span>);</code></pre></div>
+
+<p>This example registers a non-generic <code>ILogger</code> abstraction that will be injected as a closed generic version of <code>Logger&lt;T&gt;</code>, where <code>T</code> is determined based on its context (in this case the consuming component). In other words when your <code>HomeController</code> depends on an <code>ILogger</code> it will actually get a <code>Logger&lt;HomeController&gt;</code>.</p>
+
+<p>For a complete list of all the breaking changes, new features and bug fixes, please view the release notes.</p>
+
+<p>Happy injecting.</p>
+
+
+				</div>
+				
+				<div class="post">
+
+					<div class="post-heading">
+						<h1><a href="/2015/06/beta-testers-wanted/">Wanted: Beta Testers</a></h1>
+						<span>Jun 29, 2015 by Steven</span>
+					</div>
+
+					<p>With Simple Injector 3 we are breaking with the past and working hard to simplify the API to better represent our ideals and, of course, the name of our library. This means that we are introducing breaking changes in v3 that will undoubtedly impact any developer migrating from v2.</p>
+
+<p>The driver for making these breaking changes is that areas of the API have evolved over time and in so doing have grown confusing (e.g. <code>RegisterOpenGeneric</code> and <code>RegisterManyForOpenGeneric</code>). In the pursuit of keeping Simple Injector simple we felt obligated to improve the consistency of the API. These decisions have not been taken lightly because we hate breaking your code. Our driving force is, however, a simpler Simple Injector for everyone.</p>
+
+<p>We are doing our best to make the transition as seamless as possible and we need feedback on this effort. We are looking for Simple Injector users to test the beta of Simple Injector 3 and tell us what they think.</p>
+
+<p>If you can help then please upgrade your NuGet packages to <a href="https://www.nuget.org/packages/SimpleInjector/3.0.0-beta4">3.0.0-beta4</a> and try to compile your code (it will probably fail!). Our main strategy is to guide users with <a href="https://msdn.microsoft.com/en-us/library/aa664623%28v=vs.71%29.aspx">obsolete messages</a> that should be presented as descriptive compiler errors. Once you have fixed any errors please call Verify() on your container, (as you are hopefully already doing) and test your application to ensure everything resolves as expected. To discuss any element of beta testing please join us on <a href="https://simpleinjector.org/chat">gitter</a>. We would usually expect the upgrade process to take no more than a half hour.</p>
+
+<p><em>Please note that we don’t expect you to do our testing for us. Simple Injector has an extensive suite of unit tests and we don’t expect to have introduced many new bugs.</em></p>
+
+<p>Here’s a list of the most prominent breaking changes we are introducing:</p>
+
+<ul>
+<li>Calling <code>Verify()</code> will now automatically diagnose the container’s configuration for common configuration mistakes and exceptions will be thrown. We felt that not enough developers were explicitly calling <code>Analyzer.Analyze()</code> to check for diagnostic warnings, leading to a common source of bugs. So we decided to integrate this into Verification in the hope that this will guide our users to the pit of success. The old Verification behaviour can be triggered by calling <code>Verify(VerificationOption.VerifyOnly)</code>.</li>
+<li>Even if you don’t call <code>Verify()</code>, the v3 the container will always check for <a href="https://simpleinjector.org/dialm">lifestyle mismatches</a> when resolving an instance and will throw an exception if there is a mismatch in the object graph. This more strict behaviour can be suppressed globally but (for obvious reasons) we advise against doing so.</li>
+<li>The <code>RegisterSingle</code> methods have been renamed to <code>RegisterSingleton</code> as we felt there was some ambiguity in the name <code>RegisterSingle</code>, especially in combination with methods like <code>RegisterAll</code>, <code>RegisterCollection</code> and <code>RegisterManyForOpenGeneric</code>. We considered removing these method completely, but the benefits of doing so did not compare favourably to the pain of fixing this as a breaking change.</li>
+<li>The <code>RegisterAll</code> methods have been renamed to <code>RegisterCollection</code>. Just as with the <code>RegisterSingle</code> methods, new developers experienced confusion in their naming. The new name expresses more clearly what the methods do.</li>
+<li>The <code>RegisterManyForOpenGeneric</code> extension methods from the <code>SimpleInjector.Extensions</code> namespace have been replaced with new <code>Register</code> and <code>RegisterCollection</code> overloads on the <code>Container</code>. When doing one-to-one mappings, <code>Register(Type, IEnumerable&lt;Assembly&gt;)</code> can be used, and when registering collections <code>RegisterCollection(Type, IEnumerable&lt;Assembly&gt;)</code> can be used.</li>
+<li>The <code>RegisterSingleDecorator</code> extension methods have been removed. Decorators can be registered by calling <code>RegisterDecorator</code> while supplying the <code>Lifestyle.Singleton</code>.</li>
+<li>The <code>RegisterOpenGeneric</code> extension methods have been removed. The <code>Container.Register</code> methods have been extended to accept open generic types. This removes the superficial difference between the registration of open generic types and other registrations. (This difference originally had a technical background, but we allowed the internal difference to effect the user experience.) Do note that there is a behavioural difference between <code>RegisterOpenGeneric</code> and <code>Container.Register</code>. <code>RegisterOpenGeneric</code> registers each generic type as fall-back, which means it will apply that type if no other registration exists for that type. Conversely, <code>Container.Register</code> will not register a fall-back, it will, instead, test for overlapping registrations. If the fall-back behaviour is required, the new <code>RegisterConditional</code> methods can be used. The new <code>RegisterConditional</code> methods allow supplying a delegate that allows signaling a registration as fall-back registration.</li>
+<li><code>IConstructorVerificationBehavior</code> and <code>IConstructorVerificationBehavior</code> have been merged and replaced with <code>IDependencyInjectionBehavior</code>.</li>
+</ul>
+
+<p><em>In the majority of cases the compiler error messages should guide you through the migration. If you find a scenario that is unclear or it takes time to figure out please let us know. We want to make the migration as seamless as possible.</em></p>
+
+<p>Besides the above list of breaking changes, we have some compelling new features that may be of interest:</p>
+
+<ul>
+<li>A <code>Lifestyle.Scoped</code> property was added to simplify registration of scoped lifestyles, since in most applications you would typically only use one specific scoped lifestyle. You can now use <code>Register&lt;IService, Impl&gt;(Lifestyle.Scoped)</code> instead of having to call <code>RegisterPerWebRequest&lt;IService, Impl&gt;()</code> for example. This also simplifies reuse in your composition root, when the same configuration is reused over multiple application types (such as MVC and WCF).</li>
+<li>As noted above <code>RegisterConditional</code> methods are added to the <code>Container</code> to allow registering types based on contextual information such as information about the consumer in which they are injected.</li>
+<li>Batch registration made easier by adding overloads of the <code>Register</code> method that accept either a collection of types or a collection of assemblies.</li>
+<li>As explained above, the <code>Register</code> methods now accept open generic types.</li>
+<li>The container now implements <code>IDisposable</code>. This allows cached singletons to be disposed when the container gets disposed.</li>
+<li><code>RegisterCollection(Type, IEnumerable&lt;Registration&gt;)</code> now accepts open generic service types as well.</li>
+</ul>
+
+
+				</div>
+				
+				<div class="post">
+
+					<div class="post-heading">
+						<h1><a href="/2015/06/welcome-to-the-simple-injector-weblog/">Welcome to the Simple Injector weblog</a></h1>
+						<span>Jun 24, 2015 by Steven</span>
+					</div>
+
+					<p>The Simple Injector weblog is where we—the Simple Injector contributors—will write about Simple Injector, Dependency Injection, best practice and software design in general.</p>
+
+<p>Simple Injector is strongly opinionated, and so are we; we love talking about software design and principles and from now on we’ll be doing it right here.</p>
+
+<p>We&rsquo;ll keep you updated about new Simple Injector features, releases, background stories and anything else we decide to write about.</p>
+
+<p>Welcome to The Simple Injector Blog!</p>
+
+
+				</div>
+				
+
+				<div class="text-center">
+					
+
+				</div>
+
+			</div>
+			<div class="col-sm-1 col-md-3 col-md-4">
+			</div>
+		</div>
+	</div>
+
+
+
+
+
+
+
+<script src="/js/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+<script src="/js/bootstrap.min.js"></script>
+
+</body>
+</html>

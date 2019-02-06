@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on Simple Injector Blog</title>
+    <link>/posts/</link>
+    <description>Recent content in Posts on Simple Injector Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 31 Mar 2017 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Simple Injector v4 has been released</title>
+      <link>/2017/03/simple-injector-v4-has-been-released/</link>
+      <pubDate>Fri, 31 Mar 2017 00:00:00 +0000</pubDate>
+      
+      <guid>/2017/03/simple-injector-v4-has-been-released/</guid>
+      <description>For the last months we’ve been working on the next major release of Simple Injector, and it is finally here. We have removed legacy methods, simplified working with the library, and fixed many bugs and quirks.
+In contrast to the impact that v3 had for developers, we expect most developers to update without having to make any code changes when upgrading from the latest v3.x to v4.0. There are quite some breaking changes through, but most of them are in more specialized parts of the library that you use when extending Simple Injector, such as writing custom Lifestyles, which is something most developers don’t do.</description>
+    </item>
+    
+    <item>
+      <title>Working around the ASP.NET Core DI abstraction</title>
+      <link>/2016/07/working-around-the-asp-net-core-di-abstraction/</link>
+      <pubDate>Wed, 06 Jul 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/2016/07/working-around-the-asp-net-core-di-abstraction/</guid>
+      <description>For the last couple of years, Microsoft has been building the latest version of the .NET platform, branded .NET Core. One of the core components of this new framework is a DI library. Unfortunately, Microsoft made the mistake of defining a public abstraction for its DI library. In our previous blog post we described why the existence of this abstraction leads to all sorts of problems.
+The goal of this blog post is to explain how you can effectively limit exposure to this abstraction and instead apply proven practices that promote structure, design and maintainability within your application.</description>
+    </item>
+    
+    <item>
+      <title>What’s wrong with the ASP.NET Core DI abstraction?</title>
+      <link>/2016/06/whats-wrong-with-the-asp-net-core-di-abstraction/</link>
+      <pubDate>Thu, 30 Jun 2016 00:00:00 +0000</pubDate>
+      
+      <guid>/2016/06/whats-wrong-with-the-asp-net-core-di-abstraction/</guid>
+      <description>For the last couple of years Microsoft has been building the latest version of the .NET platform: .NET Core. .NET Core is a complete redesign of .NET, with the goals of being truly cross-platform and cloud friendly. We’ve been following the development of .NET Core closely and have released .NET Core compatible versions of Simple Injector since RC1. With the release of Simple Injector v3.2 we now officially support .</description>
+    </item>
+    
+    <item>
+      <title>When should you use a container?</title>
+      <link>/2015/12/when-should-you-use-a-container/</link>
+      <pubDate>Sun, 06 Dec 2015 00:00:00 +0000</pubDate>
+      
+      <guid>/2015/12/when-should-you-use-a-container/</guid>
+      <description>A DI container is a tool that allows constructing the graphs of classes that contain an application’s behaviour (a.k.a. components or injectables). When we apply Dependency Injection in our systems the DI container can simplify the process of object construction and can, when used correctly, improve the maintainability of the start-up path (a.k.a. the Composition Root) of our application. But a DI container is not mandatory when we apply Dependency Injection.</description>
+    </item>
+    
+    <item>
+      <title>Simple Injector v3 is here!</title>
+      <link>/2015/08/simple-injector-v3-is-here/</link>
+      <pubDate>Tue, 18 Aug 2015 00:00:00 +0000</pubDate>
+      
+      <guid>/2015/08/simple-injector-v3-is-here/</guid>
+      <description>After months of preparation and development we have finally released Simple Injector v3.0. In version 3 we are breaking from the past: we have removed legacy methods, simplified parts of the API and added some compelling new features.
+We expect that almost every developer will have to make changes to his/her composition root when upgrading to v3. We did our best to make the upgrade process easy but please be prepared to make changes to your code.</description>
+    </item>
+    
+    <item>
+      <title>Wanted: Beta Testers</title>
+      <link>/2015/06/beta-testers-wanted/</link>
+      <pubDate>Mon, 29 Jun 2015 00:00:00 +0000</pubDate>
+      
+      <guid>/2015/06/beta-testers-wanted/</guid>
+      <description>With Simple Injector 3 we are breaking with the past and working hard to simplify the API to better represent our ideals and, of course, the name of our library. This means that we are introducing breaking changes in v3 that will undoubtedly impact any developer migrating from v2.
+The driver for making these breaking changes is that areas of the API have evolved over time and in so doing have grown confusing (e.</description>
+    </item>
+    
+    <item>
+      <title>Welcome to the Simple Injector weblog</title>
+      <link>/2015/06/welcome-to-the-simple-injector-weblog/</link>
+      <pubDate>Wed, 24 Jun 2015 00:00:00 +0000</pubDate>
+      
+      <guid>/2015/06/welcome-to-the-simple-injector-weblog/</guid>
+      <description>The Simple Injector weblog is where we—the Simple Injector contributors—will write about Simple Injector, Dependency Injection, best practice and software design in general.
+Simple Injector is strongly opinionated, and so are we; we love talking about software design and principles and from now on we’ll be doing it right here.
+We&amp;rsquo;ll keep you updated about new Simple Injector features, releases, background stories and anything else we decide to write about.</description>
+    </item>
+    
+  </channel>
+</rss>
