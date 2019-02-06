@@ -48,6 +48,12 @@ img {
 		padding-left: 1em;
 	}
 }
+@media print {
+	.content {
+		padding-left: 1em;
+	}
+}
+
 .post {
 	margin-bottom: 3em;
 }
@@ -320,4 +326,65 @@ blockquote {
 
 div.sidebar-content p {
  text-align: left;
+}
+
+div.post a {
+ text-decoration: underline;
+}
+
+@media print {
+
+	div.post a {
+		text-decoration: none;
+	}
+	
+	html body {
+		color:black;
+	}
+
+	/* source: https://www.jotform.com/blog/css-perfect-print-stylesheet-98272/ */
+	a {
+		page-break-inside:avoid;
+	}
+	blockquote {
+		page-break-inside:avoid;
+	}
+	
+	h1, h2, h3, h4, h5, h6 {
+		page-break-after:avoid; 
+		page-break-inside:avoid
+	}
+	img {
+		page-break-inside:avoid; 
+		page-break-after:avoid;
+	}
+		
+	/* Displaying link color and link behaviour */
+	a:link, a:visited, a {
+		background: transparent;
+		color: black;
+	}
+
+	a {
+		page-break-inside:avoid;
+		overflow-wrap: break-word;
+		word-wrap: break-word;
+		word-break: break-all;		
+	}
+
+	a[href^=http]:after {
+		content:" (" attr(href) ") ";
+	}
+
+	$a:after > img {
+		content: "";
+	}
+
+	a[href^="#"]:after {
+		content: "";
+	}
+
+	a:not(:local-link):after {
+		content:" (" attr(href) ") ";
+	}
 }
