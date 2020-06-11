@@ -6,10 +6,19 @@
     <description>Recent content in Posts on Simple Injector Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 31 Mar 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 11 Jun 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Simple Injector v5 - Virus edition</title>
+      <link>/2020/06/simple-injector-v5/</link>
+      <pubDate>Thu, 11 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/06/simple-injector-v5/</guid>
+      <description>It&amp;rsquo;s been over three years since we released Simple Injector 4.0. The number of features that mean a bumping the major version number have been piling up on the backlog, and so we started work on the next major release a few months ago. And it&amp;rsquo;s finally here! We&amp;rsquo;ve removed legacy methods, improved performance, fixed bugs, added features, and continued to push the library towards a stratgey of best-practice.</description>
+    </item>
     
     <item>
       <title>Simple Injector v4 has been released</title>
