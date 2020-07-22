@@ -88,7 +88,7 @@
 
 <p><strong>There are quite a few breaking changes, which will likely impact you when migrating from v4 to v5. There are two changes in particular that you should be aware of: the handling of unregistered concrete types and auto-verification. Please read on to understand what has changed and why.</strong></p>
 
-<p>In this blog post we describe the most prominent changes and their rational, starting with how v5 stops resolving unregistered concrete types.</p>
+<p>In this blog post I describe the most prominent changes and their rational, starting with how v5 stops resolving unregistered concrete types.</p>
 
 <h3 id="unregistered-concrete-types-are-no-longer-resolved">Unregistered concrete types are no longer resolved.</h3>
 
@@ -102,13 +102,13 @@
 
 <p>These insights where gained during the development process and for each we decided to introduce a breaking change because we felt the breaking change was worth it.</p>
 
-<p>Resolving unregistered concrete types is a similar case. While the ability to resolve and inject unregistered types can be an appealing concept, we have noticed that developers are often tripped over this behavior. In the past, we have introduced new verification features (such as the <a href="https://simpleinjector.org/diasc">Short-Circuited Dependencies diagnostic warning</a>) to help reduce issues but errors still occur.</p>
+<p>Resolving unregistered concrete types is a similar case. While the ability to resolve and inject unregistered types can be an appealing concept, we have noticed that developers often trip over this behavior. In the past, we have introduced new verification features (such as the <a href="https://simpleinjector.org/diasc">Short-Circuited Dependencies diagnostic warning</a>) to help reduce issues but errors still occur.</p>
 
-<p>Changing this behavior has been long on my radar and is something I <a href="https://github.com/simpleinjector/SimpleInjector/issues/377">discussed</a> with the other contributors even before the release of v4, over three years ago. Unfortunately, at that time, we were too close to the release of v4 and needed more time to assess the impact to our users. That&rsquo;s why we postponed the change to v5. Instead, we introduced a switch in v4 that allowed disabling this behavior and started promoting disabling this behavior in the documentation. This would allow new users and new projects to use the new settings and existing users to migrate at their own pace.</p>
+<p>Changing this behavior has been long on my radar and is something I <a href="https://github.com/simpleinjector/SimpleInjector/issues/377">discussed</a> with the other contributors even before the release of v4—over three years ago. Unfortunately, at that time, we were too close to the release of v4 and needed more time to assess the impact to our users. That&rsquo;s why we postponed the change to v5. Instead, we introduced a switch in v4 that allowed disabling this behavior and started promoting disabling this behavior in the documentation. This would allow new users and new projects to use the new settings and existing users to migrate at their own pace.</p>
 
 <p>With the introduction of v5, we flipped the switch, meaning that resolution of unregistered concrete types is now disabled by default. We advise you keep the default behavior as-is and ensure you register all concrete types directly. If your current application heavily depends on unregistered concrete types being resolved, you can restore the old behavior by setting <code>Container.Options.ResolveUnregisteredConcreteTypes</code> to <code>true</code>. For more details, check <a href="https://simpleinjector.org/ructd">the documentation</a>.</p>
 
-<p>Another important change that will likely impact you is auto verification.</p>
+<p>But this is not the only big change we made. Another important change that will likely impact you is auto verification.</p>
 
 <h3 id="the-container-is-now-automatically-verified-when-first-resolved">The container is now automatically verified when first resolved.</h3>
 
@@ -118,7 +118,7 @@
 
 <p>This wasn&rsquo;t an easy call, though, and is a <strong>severe breaking change</strong>. It&rsquo;s severe, because the change in behavior can be easily overlooked.</p>
 
-<p><strong>When upgrading to Simple Injector v5, check whether your code base deliberately skips verification because of performance concerns.</strong> And when this is the case, you should suppress auto-verification.</p>
+<p><strong>When upgrading to Simple Injector v5, check whether your code base deliberately skips verification because of performance concerns.</strong> And when this is the case, you should suppress auto verification.</p>
 
 <p>There are two likely scenarios where you would want to suppress verification:</p>
 
@@ -129,7 +129,7 @@
 
 <p>Disabling auto-verification can be done by setting <code>Container.Options.EnableAutoVerification</code> to <code>false</code>.</p>
 
-<p>Although auto verification and disabled unregistered type resolution are the two changes that will impact most users, there are other changes, such as the discontinued support for .NET 4.0.</p>
+<p>Although auto verification and disabled unregistered-type resolution are the two changes that will impact most users, there are other changes, such as the discontinued support for .NET 4.0.</p>
 
 <h3 id="no-more-net-4-0">No more .NET 4.0</h3>
 
@@ -155,19 +155,19 @@
 
 <p>In v5 we changed the APIs that would throw and catch exceptions. They now follow the &lsquo;try-parse&rsquo; pattern and return a <code>boolean</code>. This does mean, however, it&rsquo;s a breaking change. In case you have a custom <code>IConstructorSelectionBehavior</code> or <code>IDependencyInjectionBehavior</code> implementation, you will need to change your implementation.</p>
 
-<p>It was impossible for us to completely remove all first-chance exceptions from the library and there are still edge cases where exceptions are caught—most notably in the generics sub system. There are some situations where Simple Injector can&rsquo;t correctly determine generic type constraints, which means that it relies on the framework to communicate the existence of such a constraint. This part of the .NET Reflection API lacks a &lsquo;try-parse&rsquo; API and we&rsquo;re stuck with catching exceptions (there currently is a <a href="https://github.com/dotnet/runtime/issues/28033">proposal</a> to add such method in .NET 5.0, but untill now the Microsoft team is note very supportive). The chances, however, of you hitting this are very slim, because it only happens under very special conditions.</p>
+<p>It was impossible for us to completely remove all first-chance exceptions from the library and there are still edge cases where exceptions are caught—most notably in the generics sub system. There are some situations where Simple Injector can&rsquo;t correctly determine generic type constraints, which means that it relies on the framework to communicate the existence of such a constraint. This part of the .NET Reflection API lacks a &lsquo;try-parse&rsquo; API and we&rsquo;re stuck with catching exceptions (there currently is a <a href="https://github.com/dotnet/runtime/issues/28033">proposal</a> to add such method in .NET 5.0, but untill now the Microsoft team is not very supportive). The chances, however, of you hitting this are very slim, because it only happens under very special conditions.</p>
 
 <h3 id="simplified-registration-of-disposable-components">Simplified registration of disposable components</h3>
 
 <p>When it comes to analyzing object graphs, Simple Injector always erred on the side of safety.</p>
 
-<p>Lifestyle Mismatches are, by far, the most common DI pitfall to deal with. Detecting these mismatches is something Simple Injector had done for a very long time now. Simple Injector prevents you from accidentally injecting a short-lived dependency into a longer-lived consumer.</p>
+<p><a href="https://simpleinjector.org/dialm">Lifestyle Mismatches</a> (a.k.a. Captive Dependencies) are, by far, the most common DI pitfall to deal with. Detecting these mismatches is something Simple Injector had done for a very long time now. Simple Injector prevents you from accidentally injecting a short-lived dependency into a longer-lived consumer.</p>
 
-<p>Simple Injector considers a Transient component&rsquo;s lifetime to be shorter than that of a Scoped component. But a single Scope could theoretically live for a very long time. If you wish, you could leave your scope open for the complete duration of a long-running operation or even for the duration of the application, which would make an injected Transient live for as long as well. This is the reason the injection of a Transient into a Scoped was blocked by default and reported by the Diagnostics sub system.</p>
+<p>Simple Injector considers a Transient component&rsquo;s lifetime to be shorter than that of a Scoped component. This is because a single <code>Scope</code> could theoretically live for a very long time. If you wish, you could leave your scope open for the complete duration of a long-running operation or even for the duration of the application, which would make an injected Transient component live for as long as well. This is the reason the injection of a Transient into a Scoped was blocked by default and reported by the Simple Injector&rsquo;s Diagnostics sub system.</p>
 
-<p>In practice, however, Scopes are usually wrapped around a single (web) request, which makes their lifetime very limited and deterministic. In these cases, injecting a Transient into a Scoped is relatively risk-free.</p>
+<p>In practice, however, scopes are usually wrapped around a single (web) request, which makes their lifetime very limited and deterministic. In these cases, injecting a Transient into a Scoped is relatively risk-free.</p>
 
-<p>Additionally, the Transient lifestyle also behaves quite differently compared to the Scoped lifestyle. Transient components are not tracked by Simple Injector and, therefore, can&rsquo;t be disposed of. You likely encountered the &ldquo;{your class} is registered as transient but implements IDisposable&rdquo; error before. Registering it as Scoped fixes the issue but would cause the Lifestyle Mismatch error when that registration contains Transient dependencies.</p>
+<p>Additionally, the Transient lifestyle also behaves quite differently compared to the Scoped lifestyle. Transient components are not tracked by Simple Injector and, therefore, can&rsquo;t be disposed of. You likely encountered the <em>&rdquo;{your class} is registered as transient but implements IDisposable&rdquo;</em> error before. Registering it as Scoped fixes the issue but would cause the Lifestyle Mismatch error when that registration contains Transient dependencies.</p>
 
 <p>Because of the low risk of injecting a Transient into a Scoped, this strict behavior causes more confusion and frustration than that it prevents errors and is why we have decided to relax this behavior. By default, Simple Injector v5 allows you to inject transients into Scoped components. If you would prefer to revert to the old behavior you can set <code>Container.Options.UseStrictLifestyleMismatchBehavior</code> to <code>true</code>.</p>
 
@@ -187,7 +187,7 @@
 
 <p>In v5 we have now integrated this feature into the core library. Not only did this simplify the ASP.NET integration package and remove the <code>IDisposable</code> limitation, it also means that asynchronous disposal is available everywhere. For example, when running background operations in ASP.NET Core, or when running a Console Application.</p>
 
-<p>The v5 ASP.NET Core integration package automatically calls <code>Scope.DisposeAsync()</code> when a web request ends. In other cases, you will need to call <code>Scope.DisposeAsync()</code> manually.</p>
+<p>The v5 ASP.NET Core integration package automatically calls <code>Scope.DisposeAsync()</code> when a web request ends. In other cases, you will need to call <code>Scope.DisposeAsync()</code> manually (or use the new C# <code>async using</code> keyword).</p>
 
 <p><strong>Please note that this feature is only available in the .NET 4.6.1, .NET Standard 2.0, and .NET Standard 2.1 versions of Simple Injector.</strong></p>
 
@@ -205,9 +205,11 @@
     <span style="color:#66d9ef">public</span> Bar(IList&lt;DependencyMetadata&lt;IDependency&gt;&gt; metadata) { }
 }</code></pre></div>
 
-<p>The class <code>X</code> will receive a <code>DependencyMetadata&lt;T&gt;</code>, which is a new Simple Injector type. This metadata gives access to the dependency&rsquo;s <strong>InstanceProducer</strong>, its implementation type, and allows the type to be resolved by calling <strong>GetInstance()</strong>.</p>
+<p>The class <code>Foo</code> will receive a <code>DependencyMetadata&lt;T&gt;</code>, which is a new Simple Injector type. This metadata gives access to the dependency&rsquo;s <strong>InstanceProducer</strong>, its implementation type, and allows the type to be resolved by calling <strong>GetInstance()</strong>.</p>
 
-<p>Admittedly, this is a rather advanced feature that not many users will need. It&rsquo;s meant to be used inside infrastructure components (i.e. classes that are part of the <a href="https://mng.bz/K1qZ">Composition Root</a>). Instructure components sometimes require more information about the dependency and need to be able to lazily resolve it. The feature is <em>not</em> meant to be used <em>outside</em> the Composition Root, because that would cause your application to take a dependency on Simple Injector, which is something we advise against.</p>
+<p>The example&rsquo;s <code>Bar</code> class, on the other hand, receives a list of <code>DependencyMetadata&lt;T&gt;</code> instances, which is useful for the injection of lists of dependencies.</p>
+
+<p>Admittedly, this is a rather advanced feature that not many users will need. It&rsquo;s meant to be used <em>inside</em> infrastructure components (i.e. classes that are part of the <a href="https://mng.bz/K1qZ">Composition Root</a>). Instructure components sometimes require more information about the dependency and need to be able to lazily resolve it. The feature is <em>not</em> meant to be used <em>outside</em> the Composition Root, because that would cause your application to take a dependency on Simple Injector, which is something we advise against.</p>
 
 <p>For a more elaborate example of this this feature, see <a href="https://simpleinjector.org/advanced+metadata">the documentation</a>.</p>
 
