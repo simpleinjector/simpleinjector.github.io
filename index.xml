@@ -55,7 +55,7 @@ The goal of this blog post is to explain how you can effectively limit exposure 
       <pubDate>Sun, 06 Dec 2015 00:00:00 +0000</pubDate>
       
       <guid>/2015/12/when-should-you-use-a-container/</guid>
-      <description>A DI container is a tool that allows constructing the graphs of classes that contain an application’s behaviour (a.k.a. components or injectables). When we apply Dependency Injection in our systems the DI container can simplify the process of object construction and can, when used correctly, improve the maintainability of the start-up path (a.k.a. the Composition Root) of our application. But a DI container is not mandatory when we apply Dependency Injection.</description>
+      <description>A DI container is a tool that allows constructing the graphs of classes that contain an application’s behaviour (a.k.a. components or injectables). When you apply Dependency Injection in your systems the DI container can simplify the process of object construction and can, when used correctly, improve the maintainability of the start-up path (a.k.a. the Composition Root) of your application. But a DI container is not mandatory when you apply Dependency Injection.</description>
     </item>
     
     <item>
