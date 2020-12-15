@@ -90,6 +90,8 @@
 
 <h2 id="double-trouble">Double Trouble</h2>
 
+<p><img align="right" width="40%" style="max-width:275px;" src="/images/diamondduck.png"></p>
+
 <p>With the introduction of .NET Core 3, Microsoft added a new <code>IAsyncDisposable</code> interface as asynchronous counterpart of <code>IDisposable</code>. In order enable asynchronous disposal in older framework versions (i.e. .NET Core 2.0 and .NET 4.6.1), Microsoft published the <a href="https://www.nuget.org/packages/Microsoft.Bcl.AsyncInterfaces/">Microsoft.Bcl.AsyncInterfaces</a> NuGet package. Where the package&rsquo;s <code>net461</code> and <code>netstandard2.0</code> targets contain assemblies that specify—among other things—the <code>IAsyncDisposable</code> interface, the <code>netstandard2.1</code> target assembly uses type forwarding to reference the framework&rsquo;s version.</p>
 
 <p>The publication of the AsyncInterfaces NuGet packages allowed Simple Injector v5.0 to start using the <code>IAsyncDisposable</code> interface. This allowed Simple Injector to asynchronously dispose of classes implementing <code>IAsyncDisposable</code>. It also allowed users to dispose of both <code>Scope</code> and <code>Container</code> in an asynchronous fashion.</p>
