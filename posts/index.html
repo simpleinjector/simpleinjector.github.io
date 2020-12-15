@@ -46,6 +46,8 @@
 			<p>Recent Posts:</p>
 			<ul>
 				
+				<li><a href="/2020/12/the-tail-of-the-async-interfaces/">The Tail of the Async Interfaces</a></li>
+				
 				<li><a href="/2020/06/simple-injector-v5/">Simple Injector v5 - Virus edition</a></li>
 				
 				<li><a href="/2017/03/simple-injector-v4-has-been-released/">Simple Injector v4 has been released</a></li>
@@ -57,8 +59,6 @@
 				<li><a href="/2015/12/when-should-you-use-a-container/">When should you use a container?</a></li>
 				
 				<li><a href="/2015/08/simple-injector-v3-is-here/">Simple Injector v3 is here!</a></li>
-				
-				<li><a href="/2015/06/beta-testers-wanted/">Wanted: Beta Testers</a></li>
 				
 			</ul>
 		</div>
@@ -74,6 +74,101 @@
 			</div>
 			<div class="col-sm-7 col-sm-offset-4 col-md-6 col-md-offset-3 col-lg-5 col-lg-offset-3 content">
 
+				
+				<div class="post">
+
+					<div class="post-heading">
+						<h1><a href="/2020/12/the-tail-of-the-async-interfaces/">The Tail of the Async Interfaces</a></h1>
+						<span>Dec 15, 2020 by Steven</span>
+					</div>
+
+					
+
+<blockquote>
+<p>With the release of Simple Injector v5, I made an error of judgement. To support asynchronous disposal of the <code>Container</code> and <code>Scope</code> objects I added a dependency from the core library to the Microsoft.Bcl.AsyncInterfaces NuGet package. Unfortunately, this proved to be a very painful mistake. In this blog post I&rsquo;ll explain why I choose to take this dependency, why this was a mistake, and how this finally got fixed in v5.2.</p>
+</blockquote>
+
+<h2 id="double-trouble">Double Trouble</h2>
+
+<p>With the introduction of .NET Core 3, Microsoft added a new <code>IAsyncDisposable</code> interface as asynchronous counterpart of <code>IDisposable</code>. In order enable asynchronous disposal in older framework versions (i.e. .NET Core 2.0 and .NET 4.6.1), Microsoft published the <a href="https://www.nuget.org/packages/Microsoft.Bcl.AsyncInterfaces/">Microsoft.Bcl.AsyncInterfaces</a> NuGet package. Where the package&rsquo;s <code>net461</code> and <code>netstandard2.0</code> targets contain assemblies that specify—among other things—the <code>IAsyncDisposable</code> interface, the <code>netstandard2.1</code> target assembly uses type forwarding to reference the framework&rsquo;s version.</p>
+
+<p>The publication of the AsyncInterfaces NuGet packages allowed Simple Injector v5.0 to start using the <code>IAsyncDisposable</code> interface. This allowed Simple Injector to asynchronously dispose of classes implementing <code>IAsyncDisposable</code>. It also allowed users to dispose of both <code>Scope</code> and <code>Container</code> in an asynchronous fashion.</p>
+
+<p>Historically, the Simple Injector core library hasn’t taken a dependency on an external NuGet package. And for good reason. Because external dependencies can cause conflicts, such as those pesky binding redirect issues that we’re all too familiar with. This is an unfortunate restriction and there have been many times I wished I could just pull in some external package to simplify my work. The very useful <a href="https://www.nuget.org/packages/System.Collections.Immutable">System.Collections.Immutable</a> package is one such example.</p>
+
+<p>Unfortunately, there is no easy way of allowing Simple Injector to asynchronously dispose of registered types without taking a dependency on AsyncInterfaces. This left me with two options:</p>
+
+<ol>
+<li>Add this dependency to the core and implement asynchronous disposal directly in the core library</li>
+<li>Create a new NuGet package (e.g., <code>SimpleInjector.Async</code>) that adds extensions that allow asynchronous disposal of <code>Scope</code> and <code>Container</code>.</li>
+</ol>
+
+<p>I decided to go with the first option as the second would result in a less discoverable solution. The former option allows implementing <code>IAsyncDisposable</code> directly on <code>Container</code> and <code>Scope</code>; the latter would likely rely on extension methods, to allow something similar to the following: <code>await scope.AsAsyncDisposable().DisposeAsync();</code>.</p>
+
+<p>This new feature was <a href="https://github.com/simpleinjector/SimpleInjector/issues/791">implemented</a> and introduced in <a href="https://blog.simpleinjector.org/2020/06/simple-injector-v5/">Simple Injector v5</a>. This is when the trouble started.</p>
+
+<h2 id="diamonds-are-forever">Diamonds are forever</h2>
+
+<p>Within a few days of the release of v5, developers <a href="https://github.com/simpleinjector/SimpleInjector/issues/823">began</a> reporting binding redirect issues. This was caused by the multitude of versions that exist for the AsyncInterfaces package and its dependencies. Developers were using other libraries and framework parts that took a dependency on AsyncInterfaces, or its dependencies <a href="https://www.nuget.org/packages/System.Threading.Tasks.Extensions">System.Threading.Tasks.Extensions</a> and <a href="https://www.nuget.org/packages/System.Runtime.CompilerServices.Unsafe">System.Runtime.CompilerServices.Unsafe</a>. When one of the used application dependencies references a different version of such package (and in particular when the package’s contained assembly has a different assembly version) binding redirect issues can appear.</p>
+
+<p>In an ideal world, the NuGet package manager automatically solves binding redirect issues for us by adding the required plumbing in the application&rsquo;s configuration file. But for some reason, the package manager fails to do this. Instead, we have to manually add binding redirects to our configuration files. And this seems especially confusing with regards to AsyncInterfaces and its sub dependencies, as their assembly versions do not match the NuGet package version. The dependency chain of AsyncInterfaces seems to be in <a href="https://nickcraver.com/blog/2020/02/11/binding-redirects/">the list of common troublemakers</a>.</p>
+
+<p>With the introduction of .NET Core, there’s the idea that binding redirect issues are thing of the past. A <a href="https://github.com/simpleinjector/SimpleInjector/issues/823#issuecomment-726143424">more-recent bug report</a>, however, demonstrated that this isn&rsquo;t always the case, demonstrating that these issues won&rsquo;t easily go away if we wait long enough.</p>
+
+<p>The pain experienced with these dependencies can be solved by setting the correct binding redirects in the application’s configuration file. To help Simple Injector users, I started posting binding direct examples that developers could copy-paste to fix their problem. But even using these examples, developers struggled, and I recently got stuck with this on an application I was developing. Whatever binding redirects I tried, after analyzing the assembly versions of the used NuGet packages, the application would crash with a dreaded “Could not load file or assembly X or one of its dependencies” exception. This was the moment that I started to realize the gravity of this Diamond Dependency dilemma that AsyncInterfaces and his little helpers caused. Action was required. This instigator had to go.</p>
+
+<blockquote>
+<p><strong>Diamond Dependency</strong></p>
+
+<p>My application took a dependency on both Simple Injector and System.Collections.Immutable. Those two libraries, however, both depended (indirectly) on the previously mentioned CompilerServices.Unsafe. Simple Injector did so via AsyncInterfaces and Tasks.Extensions, while Immutable depended on CompilerServices.Unsafe via <a href="https://www.nuget.org/packages/System.Memory">System.Memory</a>. This is an example of a Diamond Dependency.</p>
+
+<p>A Diamond Dependency is a dependency chain of at least four libraries where library A (e.g. my application) depends on libraries B (Simple Injector) and C (Immutable). B and C than depend on the final library D (Unsafe). A problem emerges when those middle libraries require different versions of this final library D. This is called the Diamond Dependency Conflict.</p>
+</blockquote>
+
+<h2 id="if-it-quacks-like-a-duck">If it quacks like a duck</h2>
+
+<p>But removing the AsyncInterfaces dependency was easier said than done. Removing the asynchronous disposal feature was not an option; developers already depend on that feature, often—but not always —implicitly by using one of the ASP.NET Core integration packages. And we can certainly expect asynchronous disposal to become more common soon, long before the Diamond Dependency problem will disappear (i.e. before Simple Injector can drop support for .NET 4 and .NET Core 2).</p>
+
+<p>Over the last 6 months I have conducted two experiments that tried duck typing to allow removing the AsyncInterfaces dependency from the core library. With duck typing, instead of depending on interfaces, you take a more dynamic approach where you accept any type that conforms to a certain signature. The C# compiler takes this approach in many places, for instance with the <code>foreach</code>, <code>using</code>, and <code>async using</code> keywords. Both trials were discontinued because of the complexity they would introduce into the library, especially when taking performance into consideration. But after I recently experienced the seriousness of the situation myself, I knew removing the party crasher was the only viable solution to this problem. And so, I had to release the Quacken!</p>
+
+<p>After multiple days of trying, failing, testing, improving, <a href="https://stackoverflow.com/questions/65200662/">asking</a>, things started to quack like duck. The meat and potatoes of the implementation is inside the <code>Scope</code> class (which now is littered with compiler directives). <code>Scope</code> now does the following:</p>
+
+<ul>
+<li>It tries to figure out if a tracked instance implements an interface named &ldquo;System.IAsyncDisposable&rdquo;. Whether that interface is The Real Thing &trade; or just some self-defined surrogate is irrelevant. If the instance implements that interface, it is stored for disposal, as would happen for &lsquo;normal&rsquo; <code>IDisposable</code> instances.</li>
+<li>During asynchronous disposal of the <code>Scope</code>, the <code>Scope</code> will invoke the instance’s <code>DisposeAsync</code> method. The returned object (typically <code>Task</code> or <code>ValueTask</code>) will be awaited.</li>
+</ul>
+
+<p>Of course, performance must be taken into consideration, considering that Reflection calls are slow. Such a performance penalty would perhaps be acceptable during disposing of the <code>Container</code>, but certainly not when disposing of a <code>Scope</code>, as an application might create and dispose of thousands of <code>Scope</code> instances per second. And so <code>Scope</code> implements the following caching:</p>
+
+<ul>
+<li>Whether a checked type implements <code>IAsyncDisposable</code> or not. This way only one call to <code>Type.GetInterfaces().Where(i =&gt; i.FullName == &quot;System.IAsyncDisposable&quot;)</code> is required.</li>
+<li>When the <code>IAsyncInterface</code> is detected for the first time, it will be stored internally. This allows any subsequent checks to call <code>asyncDisposableType.IsAssignableFrom(type)</code> instead of the slower <code>GetInstances().Where(...)</code> again.</li>
+<li>The call to <code>IAsyncDisposable.DisposeAsync().AsTask()</code> is compiled using expression trees, just as the rest of Simple Injector does for object composition under the covers. This makes calling <code>DisposeAsync</code> (almost) as fast as a native interface call. The .NET Standard 2.1 version, btw, completely skips all this duck typing nonsense and just natively calls <code>IAsyncDisposable</code> because, as I mentioned previously, with .NET Core 3 that interface is recognized natively.</li>
+</ul>
+
+<p>The greatest disadvantage of this approach, from a user&rsquo;s perspective, is that I had to remove the <code>DisposeAsync</code> methods from <code>Container</code> and <code>Scope</code> in the pre-.NET Standard 2.1 builds. Because not only did the removal of AsyncInterfaces mean no reference to <code>IAsyncDisposable</code>, it also removed the reference to <code>ValueTask</code>, which the <code>IAsyncDisposable.DisposeAsync</code> method returns. For a while I played with the idea of the other builds to have an <code>DisposeAsync</code> method that would simply return <code>Task</code>. This would allow developers to use C#&rsquo;s <code>async using</code> syntax on <code>Container</code> and <code>Scope</code>. But I quickly realized that the different signature of the <code>DisposeAsync</code> method (the return type is part of the signature) would cause <code>MissingMethodExceptions</code>.</p>
+
+<p>To prevent incompatible signatures, while still allowing both the <code>Container</code> and <code>Scope</code> to be disposed of asynchronously, methods with completely different names needed to be added. This is why you&rsquo;ll find <code>DisposeContainerAsync()</code> and <code>DisposeScopeAsync()</code> methods on <code>Container</code> and <code>Scope</code> respectively. I&rsquo;m the first to agree that this is bats-ugly, but it’s the best I could come up with.</p>
+
+<p>On the flip side, however, because of the use of duck typing, Simple Injector can now support asynchronous disposal <em>on all of its builds</em>. Where previously asynchronous disposal was only supported on the .NET 4.6.1 and .NET Standard 2.0 builds of Simple Injector, with the introduction of Simple Injector v5.2, asynchronous disposal is supported on .NET 4.5 and .NET Standard 1.0 as well. Although its not possible to reference AsyncInterfaces&rsquo; <code>IAsyncDisposable</code> in your application, you can simply define <code>System.IAsyncDisposable</code> somewhere in your application, and it just works. Here&rsquo;s an example:</p>
+
+<pre><code class="language-c#">namespace System
+{
+    public interface IAsyncDisposable
+    {
+        Task DisposeAsync();	
+    }
+}
+</code></pre>
+
+<p>Even though the official <code>IAsyncDisposable</code> interface exposes <code>ValueTask</code> rather than <code>Task</code>, Simple Injector accepts this alternative definition anyway. As long as the interface is called &ldquo;System.IAsyncDisposable&rdquo; and there&rsquo;s a method named &ldquo;DisposeAsync&rdquo; which either returns <code>Task</code> or <code>ValueTask</code>, everything will just run smoothly. This allows you to start using asynchronous disposal until you can migrate to your code base to .NET Core 3 or .NET 5.</p>
+
+<p>All the sweat and tears I poured over my keyword in the past weeks to get this fixed are now dried up and materialized in the Simple Injector code v5.2 code base. This will certainly not fix all your binding redirect issues but will at least ensure that Simple Injector is not amplifying the problem any longer.</p>
+
+<p>Happy injecting.</p>
+
+
+				</div>
 				
 				<div class="post">
 

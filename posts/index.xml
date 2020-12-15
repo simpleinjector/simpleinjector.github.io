@@ -6,10 +6,19 @@
     <description>Recent content in Posts on Simple Injector Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 11 Jun 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 15 Dec 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>The Tail of the Async Interfaces</title>
+      <link>/2020/12/the-tail-of-the-async-interfaces/</link>
+      <pubDate>Tue, 15 Dec 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/12/the-tail-of-the-async-interfaces/</guid>
+      <description>With the release of Simple Injector v5, I made an error of judgement. To support asynchronous disposal of the Container and Scope objects I added a dependency from the core library to the Microsoft.Bcl.AsyncInterfaces NuGet package. Unfortunately, this proved to be a very painful mistake. In this blog post I&amp;rsquo;ll explain why I choose to take this dependency, why this was a mistake, and how this finally got fixed in v5.</description>
+    </item>
     
     <item>
       <title>Simple Injector v5 - Virus edition</title>
