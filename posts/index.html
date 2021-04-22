@@ -65,7 +65,7 @@
 
 		
 
-		<p class="copyright">&copy; 2020. All rights reserved. </p>
+		<p class="copyright">&copy; 2021. All rights reserved. </p>
 		<p class="attr">Powered by <a href="http://gohugo.io">Hugo</a> &amp; <a href="https://github.com/ExchangeRate-API/strange-case">Strange Case</a> (inspired by <a href="https://github.com/poole/hyde">Hyde</a>).</p>
 
 	</div>
@@ -306,7 +306,7 @@
 
 <p>The example&rsquo;s <code>Bar</code> class, on the other hand, receives a list of <code>DependencyMetadata&lt;T&gt;</code> instances, which is useful for the injection of lists of dependencies.</p>
 
-<p>Admittedly, this is a rather advanced feature that not many users will need. It&rsquo;s meant to be used <em>inside</em> infrastructure components (i.e. classes that are part of the <a href="https://mng.bz/K1qZ">Composition Root</a>). Instructure components sometimes require more information about the dependency and need to be able to lazily resolve it. The feature is <em>not</em> meant to be used <em>outside</em> the Composition Root, because that would cause your application to take a dependency on Simple Injector, which is something we advise against.</p>
+<p>Admittedly, this is a rather advanced feature that not many users will need. It&rsquo;s meant to be used <em>inside</em> infrastructure components (i.e. classes that are part of the <a href="https://mng.bz/K1qZ">Composition Root</a>). Infrastructure components sometimes require more information about the dependency and need to be able to lazily resolve it. The feature is <em>not</em> meant to be used <em>outside</em> the Composition Root, because that would cause your application to take a dependency on Simple Injector, which is something we advise against.</p>
 
 <p>For a more elaborate example of this this feature, see <a href="https://simpleinjector.org/advanced+metadata">the documentation</a>.</p>
 
