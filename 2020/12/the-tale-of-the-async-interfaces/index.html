@@ -143,7 +143,7 @@
 
 <ul>
 <li>Whether a checked type implements <code>IAsyncDisposable</code> or not. This way only one call to <code>Type.GetInterfaces().Where(i =&gt; i.FullName == &quot;System.IAsyncDisposable&quot;)</code> is required.</li>
-<li>When the <code>IAsyncInterface</code> is detected for the first time, it will be stored internally. This allows any subsequent checks to call <code>asyncDisposableType.IsAssignableFrom(type)</code> instead of the slower <code>GetInstances().Where(...)</code> again.</li>
+<li>When the <code>IAsyncInterface</code> is detected for the first time, it will be stored internally. This allows any subsequent checks to call <code>asyncDisposableType.IsAssignableFrom(type)</code> instead of the slower <code>GetInterfaces().Where(...)</code> again.</li>
 <li>The call to <code>IAsyncDisposable.DisposeAsync().AsTask()</code> is compiled using expression trees, just as the rest of Simple Injector does for object composition under the covers. This makes calling <code>DisposeAsync</code> (almost) as fast as a native interface call. The .NET Standard 2.1 version, btw, completely skips all this duck typing nonsense and just natively calls <code>IAsyncDisposable</code> because, as I mentioned previously, with .NET Core 3 that interface is recognized natively.</li>
 </ul>
 
