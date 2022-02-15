@@ -65,7 +65,7 @@
 
 		
 
-		<p class="copyright">&copy; 2021. All rights reserved. </p>
+		<p class="copyright">&copy; 2022. All rights reserved. </p>
 		<p class="attr">Powered by <a href="http://gohugo.io">Hugo</a> &amp; <a href="https://github.com/ExchangeRate-API/strange-case">Strange Case</a> (inspired by <a href="https://github.com/poole/hyde">Hyde</a>).</p>
 
 	</div>
@@ -112,7 +112,7 @@
 <ul>
 <li>The way Simple Injector <a href="https://simpleinjector.org/separate-collections">explicitly separates the registration of collections</a> from one-to-one mappings</li>
 <li>How Simple Injector handles open-generic registrations; they are not treated as fall-back registrations as they are by the built-in container</li>
-<li>How Simple Injector handles scoping—Scopes in Simple Injector are ambient while .NET Core forces an <a href="https://github.com/aspnet/DependencyInjection/issues/334">ambient-less scoping model</a>.</li>
+<li>How Simple Injector handles scoping—Scopes in Simple Injector are ambient while .NET Core forces an <a href="https://github.com/aspnet/DependencyInjection/issues/334">ambient-less scoping model</a> (i.e. a <a href="https://blogs.cuttingedge.it/steven/posts/2019/closure-composition-model/">Closure Composition Model</a>).</li>
 </ul>
 
 <p>Making a fully compatible adapter for Simple Injector requires removing many prominent features, and thereby changing the existing behaviour of the Simple Injector library to something that would violate the guiding principles that underpin our vision. This is not an attractive solution. Not only would it introduce major breaking changes, it would remove features and behaviours that make Simple Injector unique and it is this complete set of features that many developers love about Simple Injector. In this sense having an adapter “stifles innovation” as Mark Seemann describes.</p>
