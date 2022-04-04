@@ -90,7 +90,7 @@
 
 <h2 id="double-trouble">Double Trouble</h2>
 
-<p><img align="right" width="40%" style="max-width:275px;" src="/images/diamondduck.png"></p>
+<p><img align="right" width="40%" style="max-width:275px;" src="/images/diamondduck.png" loading="lazy" decoding="async"></p>
 
 <p>With the introduction of .NET Core 3, Microsoft added a new <code>IAsyncDisposable</code> interface as asynchronous counterpart of <code>IDisposable</code>. In order enable asynchronous disposal in older framework versions (i.e. .NET Core 2.0 and .NET 4.6.1), Microsoft published the <a href="https://www.nuget.org/packages/Microsoft.Bcl.AsyncInterfaces/">Microsoft.Bcl.AsyncInterfaces</a> NuGet package. Where the package&rsquo;s <code>net461</code> and <code>netstandard2.0</code> targets contain assemblies that specify—among other things—the <code>IAsyncDisposable</code> interface, the <code>netstandard2.1</code> target assembly uses type forwarding to reference the framework&rsquo;s version.</p>
 
@@ -730,7 +730,7 @@ container.RegisterSingleton&lt;IUserContext&gt;(<span style="color:#66d9ef">new<
 
 <p>After months of preparation and development we have finally released <a href="https://www.nuget.org/packages/SimpleInjector/">Simple Injector v3.0</a>. In version 3 we are breaking from the past: we have removed legacy methods, simplified parts of the API and added some compelling new features.</p>
 
-<p><em><strong>We expect that almost every developer will have to make changes to his/her composition root when upgrading to v3.</strong> We did our best to make the upgrade process easy but please be prepared to make changes to your code.</em></p>
+<p><em><strong>We expect that almost every developer will have to make changes to their composition root when upgrading to v3.</strong> We did our best to make the upgrade process easy but please be prepared to make changes to your code.</em></p>
 
 <p>The driver for making these breaking changes is that parts of the API have evolved over time and in doing so have grown confusing (e.g. <code>RegisterOpenGeneric</code> and <code>RegisterManyForOpenGeneric</code>). In the pursuit of keeping Simple Injector simple we felt obligated to improve the consistency of the API. These decisions have not been taken lightly because we hate breaking your code. Our driving force is, however, a simpler and more compelling library for everyone.</p>
 

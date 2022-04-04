@@ -74,7 +74,7 @@ The goal of this blog post is to explain how you can effectively limit exposure 
       
       <guid>/2015/08/simple-injector-v3-is-here/</guid>
       <description>After months of preparation and development we have finally released Simple Injector v3.0. In version 3 we are breaking from the past: we have removed legacy methods, simplified parts of the API and added some compelling new features.
-We expect that almost every developer will have to make changes to his/her composition root when upgrading to v3. We did our best to make the upgrade process easy but please be prepared to make changes to your code.</description>
+We expect that almost every developer will have to make changes to their composition root when upgrading to v3. We did our best to make the upgrade process easy but please be prepared to make changes to your code.</description>
     </item>
     
     <item>
